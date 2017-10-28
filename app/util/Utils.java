@@ -42,6 +42,18 @@ public class Utils {
         return Arrays.asList(sentence.split(" "));
     }
 
+    public static String combineWordsToSentence(List<String> words) {
+        if (words == null) {
+            return Utils.EMPTY_STRING;
+        }
+        StringBuilder stringBuilder  = new StringBuilder();
+        for (String word: words) {
+            stringBuilder.append(word);
+            stringBuilder.append(" ");
+        }
+        return stringBuilder.toString().toLowerCase().trim();
+    }
+
     public static void printDebug(String stringToPrint) {
         if (PRINT_MODE.equalsIgnoreCase("DEBUG")) {
             System.out.println(stringToPrint);
@@ -121,6 +133,7 @@ public class Utils {
         return new ArrayList<>(keywordListToReturn);
     }
 
+
     public static String removeDuplicateWords(String input) {
         if (nullOrEmpty(input)) {
             return input;
@@ -161,4 +174,5 @@ public class Utils {
         }
         return input.replaceAll("[^\\w\\s]","").trim().toLowerCase();
     }
+
 }

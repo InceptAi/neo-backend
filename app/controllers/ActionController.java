@@ -26,21 +26,22 @@ public class ActionController extends Controller {
     }
 
     public Result searchActions(String inputText, String packageName, String baseScreenTitle, String deviceInfo) {
+        final boolean fuzzySearch = true;
         ActionResponse actionResponse = ActionResponseHelper.createActionResponse(inputText, packageName,
-                baseScreenTitle, deviceInfo, new SimplePathFinder(), DEFAULT_MAX_RESULTS_FOR_ACTION_SEARCH);
+                baseScreenTitle, deviceInfo, new SimplePathFinder(), DEFAULT_MAX_RESULTS_FOR_ACTION_SEARCH,fuzzySearch);
         ObjectMapper mapper = new ObjectMapper();
         JsonNode jsonData = mapper.convertValue(actionResponse, JsonNode.class);
         return ok(Utils.createResponse(jsonData, true));
     }
 
     public Result searchSettingActions(String inputText, String deviceInfo) {
+        final boolean fuzzySearch = false;
         ActionResponse actionResponse = ActionResponseHelper.createActionResponse(inputText, SETTINGS_PACKAGE_NAME,
-                SETTINGS_TITLE, deviceInfo, new SimplePathFinder(), DEFAULT_MAX_RESULTS_FOR_ACTION_SEARCH);
+                SETTINGS_TITLE, deviceInfo, new SimplePathFinder(), DEFAULT_MAX_RESULTS_FOR_ACTION_SEARCH, fuzzySearch);
         ObjectMapper mapper = new ObjectMapper();
         JsonNode jsonData = mapper.convertValue(actionResponse, JsonNode.class);
         return ok(jsonData);
         //return ok(Utils.createResponse(jsonData, true));
     }
-
 
 }

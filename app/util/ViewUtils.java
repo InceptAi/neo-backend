@@ -17,6 +17,9 @@ public class ViewUtils {
     public static final String CHECKED_TEXT_VIEW_CLASS_NAME = "android.widget.CheckedTextView";
     public static final String EDIT_TEXT_VIEW_CLASS_NAME = "android.widget.EditText";
     public static final String BUTTON_CLASS_NAME = "android.widget.Button";
+    public static final String RADIO_BUTTON_CLASS_NAME = "android.widget.RadioButton";
+
+
 
     private static final String VIEWPAGER_CLASS = "ViewPager";
     private static final String NULL_STRING = "null";
@@ -115,6 +118,7 @@ public class ViewUtils {
 
             case ViewUtils.IMAGE_BUTTON_CLASS_NAME:
             case ViewUtils.CHECKED_TEXT_VIEW_CLASS_NAME:
+            case ViewUtils.RADIO_BUTTON_CLASS_NAME:
                 textToReturn = text;
                 break;
 
@@ -145,7 +149,8 @@ public class ViewUtils {
     public static boolean isToggleable(String className) {
         return className.equalsIgnoreCase(SWITCH_CLASS_NAME) ||
                 className.equalsIgnoreCase(CHECK_BOX_CLASS_NAME) ||
-                className.equalsIgnoreCase(CHECKED_TEXT_VIEW_CLASS_NAME);
+                className.equalsIgnoreCase(CHECKED_TEXT_VIEW_CLASS_NAME) ||
+                className.equalsIgnoreCase(RADIO_BUTTON_CLASS_NAME);
     }
 
     public static String getTitleFromView(HashMap<Long, RenderingView> renderingViewHashMap) {

@@ -76,6 +76,13 @@ public class UIPath {
         return uiSteps;
     }
 
+    public UIStep getLastStepInPath() {
+        if (uiSteps.isEmpty()) {
+            return null;
+        }
+        return uiSteps.get(uiSteps.size() - 1);
+    }
+
     public SemanticActionType getSemanticActionType() {
         return semanticActionType;
     }

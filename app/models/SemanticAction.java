@@ -17,10 +17,25 @@ public class SemanticAction {
     private String uiActionId;
     private String deviceInfo;
 
-    private SemanticAction(UIScreen uiScreen, UIElement uiElement, UIAction uiAction) {
+    private SemanticAction(UIScreen uiScreen, UIElement uiElement, UIElement parentElement, UIAction uiAction) {
+        Utils.printDebug("In semantic action create, uiElement: " + uiElement.toString() + " parentElement: " + parentElement);
         //Utils.printDebug("Adding semantic action with className:" + className + " elementText:" + elementText);
+        String actionDescription = uiElement.getAllText();
         String actionName = SemanticActionType.UNDEFINED.id();
         switch (uiElement.getClassName()) {
+            case ViewUtils.SWITCH_CLASS_NAME:
+            case ViewUtils.CHECK_BOX_CLASS_NAME:
+                if (parentElement != null) {
+                    if (!parentElement.isClickable()) {
+                        //Parent element is not clickable need to add actionName and text here
+                        actionName = SemanticActionType.TOGGLE.id();
+                        actionDescription = parentElement.getAllText();
+                    }
+                } else {
+                    actionName = SemanticActionType.TOGGLE.id();
+                    actionDescription = uiScreen.getTitle() + " " + uiElement.getAllText(); //Not sure if this will work
+                }
+                break;
             case ViewUtils.LINEAR_LAYOUT_CLASS_NAME:
             case ViewUtils.RELATIVE_LAYOUT_CLASS_NAME:
             case ViewUtils.FRAME_LAYOUT_CLASS_NAME:
@@ -34,6 +49,7 @@ public class SemanticAction {
 //              }
                 break;
             case ViewUtils.CHECKED_TEXT_VIEW_CLASS_NAME:
+            case ViewUtils.RADIO_BUTTON_CLASS_NAME:
                 actionName = SemanticActionType.TOGGLE.id();
                 break;
 //            case ViewUtils.SWITCH_CLASS_NAME:
@@ -52,7 +68,7 @@ public class SemanticAction {
             default:
                 break;
         }
-        this.semanticActionDescription = uiElement.getAllText();
+        this.semanticActionDescription = actionDescription;
         this.semanticActionName = actionName;
         this.uiScreenId = uiScreen.getId();
         this.uiElementId = uiElement.id();
@@ -79,9 +95,9 @@ public class SemanticAction {
      * Factory constructor to create an instance
      * @return Instance of SemanticAction or null on error.
      */
-    public static SemanticAction create(UIScreen uiScreen, UIElement uiElement, UIAction uiAction) {
+    public static SemanticAction create(UIScreen uiScreen, UIElement uiElement, UIElement parentElement, UIAction uiAction) {
         if (uiAction.equals(UIAction.CLICK) || uiAction.equals(UIAction.SELECT)) {
-            return new SemanticAction(uiScreen, uiElement, uiAction);
+            return new SemanticAction(uiScreen, uiElement, parentElement, uiAction);
         }
         return new SemanticAction();
     }

@@ -7,7 +7,9 @@ public enum UIAction {
     FOCUS("FOCUS"),
     SELECT("SELECT"),
     POPUP("POPUP"),
-    CHANGE("CHANGE"),
+    CONTENT_CHANGE("CONTENT_CHANGE"),
+    WINDOW_STATE_CHANGE("WINDOW_STATE_CHANGE"),
+    WINDOW_CHANGE("WINDOW_CHANGE"),
     UNDEFINED("UNDEFINED");
 
     private String id;
@@ -42,11 +44,13 @@ public enum UIAction {
                 return SELECT;
             case "POPUP":
                 return POPUP;
-            case "CHANGE":
-            case "TYPE_WINDOW_CHANGED":
-            case "TYPE_WINDOW_CONTENT_CHANGED":
+            case "WINDOW_CHANGE":
+                return WINDOW_CHANGE;
             case "TYPE_WINDOW_STATE_CHANGED":
-                return CHANGE;
+                return WINDOW_STATE_CHANGE;
+            case "CONTENT_CHANGE":
+                return CONTENT_CHANGE;
+
         }
         return UNDEFINED;
     }

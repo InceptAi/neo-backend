@@ -23,6 +23,69 @@ public class RenderingView {
     private boolean isChecked;
     private boolean isClickable;
     private boolean isCheckable;
+    private boolean isScrollable = false;
+    private boolean isEnabled = false;
+    private boolean isSelected = false;
+    private int totalItems = 0;
+    private int currentItemIndex = 0;
+    private int startItemIndex = 0;
+    private int endItemIndex = 0;
+
+    public boolean isScrollable() {
+        return isScrollable;
+    }
+
+    public void setIsScrollable(boolean scrollable) {
+        isScrollable = scrollable;
+    }
+
+    public boolean isEnabled() {
+        return isEnabled;
+    }
+
+    public void setIsEnabled(boolean enabled) {
+        isEnabled = enabled;
+    }
+
+    public boolean isSelected() {
+        return isSelected;
+    }
+
+    public void setIsSelected(boolean selected) {
+        isSelected = selected;
+    }
+
+    public int getTotalItems() {
+        return totalItems;
+    }
+
+    public void setTotalItems(int totalItems) {
+        this.totalItems = totalItems;
+    }
+
+    public int getCurrentItemIndex() {
+        return currentItemIndex;
+    }
+
+    public void setCurrentItemIndex(int currentItemIndex) {
+        this.currentItemIndex = currentItemIndex;
+    }
+
+    public int getStartItemIndex() {
+        return startItemIndex;
+    }
+
+    public void setStartItemIndex(int startItemIndex) {
+        this.startItemIndex = startItemIndex;
+    }
+
+    public int getEndItemIndex() {
+        return endItemIndex;
+    }
+
+    public void setEndItemIndex(int endItemIndex) {
+        this.endItemIndex = endItemIndex;
+    }
 
     public long getParentViewId() {
         return parentViewId;

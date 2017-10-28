@@ -79,49 +79,106 @@ public class UIScreen {
         this.deviceInfo = deviceInfo;
     }
 
-    public List<UIElement> findElementsInScreen(String className, String packageName, String text, boolean fuzzySearch) {
+    public List<UIElement> findElementsInScreen(String className, String packageName,
+                                                String text, boolean needClickable,
+                                                boolean fuzzySearch) {
         if (fuzzySearch) {
-            return findElementsInScreenFuzzy(className, packageName, text);
+            return findElementsInScreenFuzzyNested(className, packageName, text, needClickable);
         } else {
-            return findElementsInScreenStrict(className, packageName, text);
+            return findElementsInScreenStrictNested(className, packageName, text, needClickable);
         }
     }
 
 
-    private List<UIElement> findElementsInScreenFuzzy(String className, String packageName, String text) {
-        List<UIElement> uiElementListToReturn = new ArrayList<>();
-        HashMap<String, Double> matchingUIElements = new HashMap<>();
-        SimpleTextInterpreter textInterpreter = new SimpleTextInterpreter(0);
+    private List<UIElement> findElementsInScreenFuzzyNested(String className, String packageName, String text, boolean needClickable) {
+        final double MIN_MATCH_PERCENTAGE_FOR_ELEMENT = 0.5;
+        HashMap<String, UIElement> uiElementListToReturn = new HashMap<>();
+        HashMap<String, Double> matchingUIElementScores = new HashMap<>();
+        HashMap<String, UIElement> matchingUIElements = new HashMap<>();
+        SimpleTextInterpreter textInterpreter = new SimpleTextInterpreter(MIN_MATCH_PERCENTAGE_FOR_ELEMENT);
         for (UIElement uiElement: uiElements.values()) {
             //Do fuzzy search
-            double matchMetric = textInterpreter.getMatchMetric(text, uiElement.getAllText());
-            if ( matchMetric > 0) {
-                matchingUIElements.put(uiElement.id(), matchMetric);
+            UIElement.ElementScore matchingElementScore = uiElement.findElementByTextFuzzy(text, textInterpreter, needClickable);
+            if (matchingElementScore != null) {
+                matchingUIElementScores.put(matchingElementScore.getElement().id(), matchingElementScore.getScore());
+                matchingUIElements.put(matchingElementScore.getElement().id(), matchingElementScore.getElement());
             }
         }
+
         //Sort the hash map based on match metric
-        Map<String, Double> sortedMetricMap = Utils.sortHashMapByValueDescending(matchingUIElements);
+        Map<String, Double> sortedMetricMap = Utils.sortHashMapByValueDescending(matchingUIElementScores);
         for (HashMap.Entry<String, Double> entry : sortedMetricMap.entrySet()) {
-            uiElementListToReturn.add(uiElements.get(entry.getKey()));
+            //TODO: This will not work for nested elements being returned as uiElements.get -- returns null for nested ids
+            //uiElementListToReturn.put(entry.getKey(), uiElements.get(entry.getKey()));
+            uiElementListToReturn.put(entry.getKey(), matchingUIElements.get(entry.getKey()));
         }
-        return uiElementListToReturn;
+        return new ArrayList<UIElement>(uiElementListToReturn.values());
     }
 
-    private List<UIElement> findElementsInScreenStrict(String className, String packageName, String text) {
-        List<UIElement> uiElementList = new ArrayList<>();
+//    private List<UIElement> findElementsInScreenFuzzyOld(String className, String packageName, String text, boolean isClickable) {
+//        List<UIElement> uiElementListToReturn = new ArrayList<>();
+//        HashMap<String, Double> matchingUIElements = new HashMap<>();
+//        SimpleTextInterpreter textInterpreter = new SimpleTextInterpreter(0);
+//        for (UIElement uiElement: uiElements.values()) {
+//            //Do fuzzy search
+//            double matchMetric = textInterpreter.getMatchMetric(text, uiElement.getAllText());
+//            if ( matchMetric > 0 && (!isClickable || uiElement.isClickable())) {
+//                matchingUIElements.put(uiElement.id(), matchMetric);
+//            }
+//        }
+//        //Sort the hash map based on match metric
+//        Map<String, Double> sortedMetricMap = Utils.sortHashMapByValueDescending(matchingUIElements);
+//        for (HashMap.Entry<String, Double> entry : sortedMetricMap.entrySet()) {
+//            uiElementListToReturn.add(uiElements.get(entry.getKey()));
+//        }
+//        return uiElementListToReturn;
+//    }
+
+
+    private List<UIElement> findElementsInScreenStrictNested(String className, String packageName,
+                                                             String text, boolean needClickable) {
+        Utils.printDebug("In Strict nested matching, input text " + text + " class: " + className + " pkg: " + packageName);
+        HashMap<String, UIElement> uiElementMap = new HashMap<>();
         for (UIElement uiElement: uiElements.values()) {
-            if (uiElement.getClassName().equals(className) &&
-                    uiElement.getPackageName().equals(packageName) &&
-                    uiElement.isMatchForText(text)) {
-                uiElementList.add(uiElement);
-            }
+            Utils.printDebug("In Strict nested matching, looking at top level element: " + uiElement.toString());
+            uiElementMap.putAll(uiElement.findElementsByTextStrict(className, packageName, text, needClickable));
         }
-        return uiElementList;
+        return new ArrayList<>(uiElementMap.values());
     }
 
+//    private List<UIElement> findElementsInScreenStrict(String className, String packageName, String text, boolean isClickable) {
+//        List<UIElement> uiElementList = new ArrayList<>();
+//        for (UIElement uiElement: uiElements.values()) {
+//            if (uiElement.getClassName().equals(className) &&
+//                    uiElement.getPackageName().equals(packageName) &&
+//                    uiElement.isMatchForText(text)) {
+//                uiElementList.add(uiElement);
+//            }
+//        }
+//        return uiElementList;
+//    }
 
-    public UIElement findElementById(String elementId) {
+    public UIElement findTopLevelElementById(String elementId) {
         return uiElements.get(elementId);
+    }
+
+    public UIElementTuple findElementAndTopLevelParentById(String elementId) {
+        UIElement topLevelElement = uiElements.get(elementId);
+        UIElement actualElement = null;
+        if (topLevelElement == null) {
+            //Search for child elements
+            for (UIElement uiElement: uiElements.values()) {
+                topLevelElement = uiElement;
+                actualElement = uiElement.findElementById(elementId);
+                if (actualElement != null) {
+                    break;
+                }
+            }
+        } else {
+            actualElement = topLevelElement;
+        }
+
+        return new UIElementTuple(actualElement, topLevelElement);
     }
 
 
@@ -158,6 +215,33 @@ public class UIScreen {
         result = 31 * result + title.hashCode();
         result = 31 * result + deviceInfo.hashCode();
         return result;
+    }
+
+    public class UIElementTuple {
+        private UIElement uiElement;
+        private UIElement topLevelParent;
+
+        public UIElementTuple(UIElement uiElement, UIElement topLevelParent) {
+            this.uiElement = uiElement;
+            this.topLevelParent = topLevelParent;
+
+        }
+
+        public UIElement getUiElement() {
+            return uiElement;
+        }
+
+        public void setUiElement(UIElement uiElement) {
+            this.uiElement = uiElement;
+        }
+
+        public UIElement getTopLevelParent() {
+            return topLevelParent;
+        }
+
+        public void setTopLevelParent(UIElement topLevelParent) {
+            this.topLevelParent = topLevelParent;
+        }
     }
 
 }

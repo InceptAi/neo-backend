@@ -14,15 +14,23 @@ import java.util.List;
 public class ActionResponseHelper {
 
     //Take input the semantic ids and best matching string and create action response
-    public static ActionResponse createActionResponse(String inputText, String packageName, String baseScreenTitle,
-                                                      String deviceInfo, PathFinder pathFinder, int maxResults) {
+    public static ActionResponse createActionResponse(String inputText, String packageName,
+                                                      String baseScreenTitle, String deviceInfo,
+                                                      PathFinder pathFinder, int maxResults,
+                                                      boolean fuzzyScreenSearch) {
         //sanitize the input
         inputText = Utils.sanitizeText(inputText);
         deviceInfo = Utils.sanitizeText(deviceInfo);
         baseScreenTitle = Utils.sanitizeText(baseScreenTitle);
 
         //Make sure starting screen is not null
-        UIScreen startingScreen = UIScreenStore.getInstance().getScreen(packageName, baseScreenTitle, deviceInfo);
+        UIScreen startingScreen = null;
+        if (fuzzyScreenSearch) {
+            startingScreen = UIScreenStore.getInstance().findTopMatchingScreenIdByKeyword(baseScreenTitle, packageName);
+        } else {
+            startingScreen = UIScreenStore.getInstance().getScreen(packageName, baseScreenTitle, deviceInfo);
+        }
+
         if (startingScreen == null) {
             return new ActionResponse();
         }
@@ -42,9 +50,11 @@ public class ActionResponseHelper {
             SemanticAction semanticAction = SemanticActionStore.getInstance().getAction(actionId);
             UIScreen dstScreen = UIScreenStore.getInstance().getScreen(semanticAction.getUiScreenId());
             UIScreen srcScreen = UIScreenStore.getInstance().getScreen(startingScreen.getId());
-            UIElement uiElement = dstScreen.getUiElements().get(semanticAction.getUiElementId());
-            if (srcScreen == null || dstScreen == null || uiElement == null) {
-                return new ActionResponse();
+            //TODO: semantic action element id may not be top level id -- so handle it
+            UIScreen.UIElementTuple uiElementTuple = dstScreen.findElementAndTopLevelParentById(semanticAction.getUiElementId());
+            //UIElement uiElement = dstScreen.getUiElements().get(semanticAction.getUiElementId());
+            if (srcScreen == null || dstScreen == null || uiElementTuple.getTopLevelParent() == null || uiElementTuple.getUiElement() == null) {
+                continue;
             }
             UIPath navigationPathBetweenScreens = pathFinder.findPathBetweenScreens(srcScreen, dstScreen);
             //Create navigation list
@@ -52,9 +62,10 @@ public class ActionResponseHelper {
             //Last step
             ScreenIdentifier dstScreenIdentifier = new ScreenIdentifier(dstScreen.getTitle(), dstScreen.getPackageName());
             ElementIdentifier elementIdentifier = createElementIdentifier(
-                    uiElement.getClassName(),
-                    uiElement.getPackageName(),
-                    uiElement.getAllText()); //
+                    uiElementTuple.getUiElement().getClassName(), // TODO : top level element to clickable class name
+                    uiElementTuple.getUiElement().getPackageName(),
+                    uiElementTuple.getTopLevelParent().getAllText()); //TODO: UIElement gettext needs to return the text of the parent
+
 
             ActionIdentifier actionIdentifier = new ActionIdentifier(
                     dstScreenIdentifier,
@@ -71,6 +82,7 @@ public class ActionResponseHelper {
     }
 
     public static List<NavigationIdentifier> getNavigationPathForClient(UIPath uiPath) {
+        //TODO add the nested element support here too -- just like action identifier
         if (uiPath == null) {
             return null;
         }
@@ -78,8 +90,10 @@ public class ActionResponseHelper {
         for (UIStep uiStep: uiPath.getUiSteps()) {
             UIScreen srcScreen = UIScreenStore.getInstance().getScreen(uiStep.getSrcScreenId());
             UIScreen dstScreen = UIScreenStore.getInstance().getScreen(uiStep.getDstScreenId());
-            UIElement uiElement = srcScreen.getUiElements().get(uiStep.getUiElementId());
-            if (srcScreen == null || dstScreen == null || uiElement == null) {
+            //UIElement uiElement = srcScreen.getUiElements().get(uiStep.getUiElementId());
+            UIScreen.UIElementTuple uiElementTuple = srcScreen.findElementAndTopLevelParentById(uiStep.getUiElementId());
+            UIElement uiElement = uiElementTuple != null ? uiElementTuple.getUiElement() : null;
+            if (srcScreen == null || dstScreen == null || uiElementTuple == null) {
                 return null;
             }
             ScreenIdentifier srcIdentifier = new ScreenIdentifier(srcScreen.getTitle(), srcScreen.getPackageName());
