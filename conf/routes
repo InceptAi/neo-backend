@@ -14,6 +14,7 @@ DELETE	/screens/:package/:title/:device		    controllers.CrawlController.delete(
 #Action controller -- semantic action stuff
 GET    /actions/all                             controllers.ActionController.listActions()
 GET    /actions                                 controllers.ActionController.searchActions(query, pkg, title, device: String ?= "")
+GET    /actions/pkg/:pkg/                       controllers.ActionController.searchActions(query, pkg, title, device: String ?= "")
 GET    /settings                                controllers.ActionController.searchSettingActions(query: String ?= "", device: String ?= "")
 GET    /settings/device/:device/                controllers.ActionController.searchSettingActions(query: String ?= "", device:String)
 
