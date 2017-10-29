@@ -18,7 +18,7 @@ public class SemanticAction {
     private String deviceInfo;
 
     private SemanticAction(UIScreen uiScreen, UIElement uiElement, UIElement parentElement, UIAction uiAction) {
-        Utils.printDebug("In semantic action create, uiElement: " + uiElement.toString() + " parentElement: " + parentElement);
+        //Utils.printDebug("In semantic action create, uiElement: " + uiElement.toString() + " parentElement: " + parentElement);
         //Utils.printDebug("Adding semantic action with className:" + className + " elementText:" + elementText);
         String actionDescription = uiElement.getAllText();
         String actionName = SemanticActionType.UNDEFINED.id();

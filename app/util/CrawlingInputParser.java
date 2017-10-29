@@ -289,7 +289,7 @@ public class CrawlingInputParser {
                 if (!SemanticAction.isUndefined(semanticAction)) {
                     semanticActionHashMap.put(uiAction.id(), semanticAction);
                     SemanticActionStore.getInstance().addSemanticAction(semanticAction);
-                    Utils.printDebug("Adding semantic action: " + semanticAction);
+                    //Utils.printDebug("Adding semantic action: " + semanticAction);
                 }
             }
         }
