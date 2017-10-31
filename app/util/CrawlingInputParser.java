@@ -34,11 +34,21 @@ public class CrawlingInputParser {
         if (!shouldProcess(crawlingInput.getLastUIAction())) {
             return null;
         }
+
+        if (Utils.nullOrEmpty(crawlingInput.getRootTitle())) {
+            return null;
+        }
+
         UIScreen screenToBeCreated = new UIScreen();
         if (crawlingInput.getRootTitle() != null) {
             screenToBeCreated.setTitle(crawlingInput.getRootTitle());
             Utils.printDebug("In parseCrawlingInput currentTitle: " + crawlingInput.getRootTitle());
         }
+        if (crawlingInput.getRootSubTitle() != null) {
+            screenToBeCreated.setSubTitle(crawlingInput.getRootSubTitle());
+            Utils.printDebug("In parseCrawlingInput subTitle: " + crawlingInput.getRootSubTitle());
+        }
+
         if (crawlingInput.getRootPackageName() != null) {
             screenToBeCreated.setPackageName(crawlingInput.getRootPackageName());
             Utils.printDebug("In parseCrawlingInput currentPkg: " + crawlingInput.getRootPackageName());
@@ -46,19 +56,23 @@ public class CrawlingInputParser {
         if (crawlingInput.getDeviceInfo() != null) {
             screenToBeCreated.setDeviceInfo(crawlingInput.getDeviceInfo());
         }
+        if (crawlingInput.getCurrentScreenType() != null) {
+            screenToBeCreated.setScreenType(crawlingInput.getCurrentScreenType());
+        }
+
 
         if (crawlingInput.getLastScreenTitle() != null &&
                 crawlingInput.getLastScreenPackageName() != null &&
                 crawlingInput.getLastUIAction() != null &&
-                crawlingInput.getLastViewClicked() != null ) {
+                crawlingInput.getLastViewClicked() != null && crawlingInput.getLastScreenType() != null) {
             String lastClickedText = crawlingInput.getLastViewClicked().getText() != null ?
                     crawlingInput.getLastViewClicked().getText() : Utils.EMPTY_STRING;
             Utils.printDebug("In parseCrawlingInput lastScreenTitle: " +
-                    crawlingInput.getLastScreenTitle() + " lastpkg: " +
-                    crawlingInput.getLastScreenPackageName() + " lastAction: " +
-                    crawlingInput.getLastUIAction() + " lastViewText: " +
-                    lastClickedText);
-
+                    crawlingInput.getLastScreenTitle() +
+                    " lastpkg: " + crawlingInput.getLastScreenPackageName() +
+                    " lastAction: " + crawlingInput.getLastUIAction() +
+                    " lastViewText: " + lastClickedText +
+                    " lastScreenType: " + crawlingInput.getLastScreenType());
         }
 
 
@@ -111,6 +125,7 @@ public class CrawlingInputParser {
         }
 
         for (UIElement uiElement: topLevelElementList) {
+            uiElement.finalizeChildElementIds();
             screenToBeCreated.add(uiElement);
         }
 
@@ -125,7 +140,9 @@ public class CrawlingInputParser {
         UIStep uiStep = getLastUIStep(
                 screenToBeCreated,
                 crawlingInput.getLastScreenTitle(),
+                crawlingInput.getLastScreenSubTitle(),
                 crawlingInput.getLastScreenPackageName(),
+                crawlingInput.getLastScreenType(),
                 crawlingInput.getLastViewClicked(),
                 crawlingInput.getLastUIAction());
 
@@ -175,7 +192,9 @@ public class CrawlingInputParser {
 
     private static UIStep getLastUIStep(UIScreen currentScreen,
                                        String lastScreenTitle,
+                                       String lastScreenSubTitle,
                                        String lastScreenPackageName,
+                                       String lastScreenType,
                                        RenderingView lastViewClicked,
                                        String lastAction) {
         //Create the last step in UIPath
@@ -203,11 +222,15 @@ public class CrawlingInputParser {
         UIElement lastElement = null;
         UIAction lastUIAction = UIAction.actionStringToEnum(lastAction);
         UIStep.UIStepType uiStepType = UIStep.UIStepType.UNDEFINED;
-
         String lastScreenId = Utils.EMPTY_STRING;
 
         if (!Utils.nullOrEmpty(lastScreenTitle) && !Utils.nullOrEmpty(lastScreenPackageName)) {
-            lastScreenId = UIScreen.getScreenId(lastScreenPackageName, lastScreenTitle, currentScreen.getDeviceInfo().toString());
+            lastScreenId = UIScreen.getScreenId(
+                    lastScreenPackageName,
+                    lastScreenTitle,
+                    lastScreenSubTitle,
+                    lastScreenType,
+                    currentScreen.getDeviceInfo().toString());
             lastScreen = UIScreenStore.getInstance().getScreen(lastScreenId);
         }
 
@@ -226,13 +249,6 @@ public class CrawlingInputParser {
         } else {
             uiStepType = UIStep.UIStepType.TO_ANOTHER_SCREEN;
         }
-//        } else {
-//            if (Utils.nullOrEmpty(lastViewClicked.getOverallText())) {
-//                uiStepType = UIStep.UIStepType.SOFT_STEP_INTER_SCREEN;
-//            } else {
-//                uiStepType = UIStep.UIStepType.TO_ANOTHER_SCREEN;
-//            }
-//        }
 
         //TODO: Replaced getText with getOverallText to include contentDescription -- see if it works
         List<UIElement> matchingElements = lastScreen.findElementsInScreen(

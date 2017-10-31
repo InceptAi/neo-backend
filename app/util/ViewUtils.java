@@ -8,6 +8,7 @@ import java.util.Map;
 public class ViewUtils {
     public static final String TEXT_VIEW_CLASS_NAME = "android.widget.TextView";
     public static final String IMAGE_BUTTON_CLASS_NAME = "android.widget.ImageButton";
+    public static final String IMAGE_VIEW_CLASS_NAME = "android.widget.ImageView";
     public static final String LINEAR_LAYOUT_CLASS_NAME = "android.widget.LinearLayout";
     public static final String FRAME_LAYOUT_CLASS_NAME = "android.widget.FrameLayout";
     public static final String RELATIVE_LAYOUT_CLASS_NAME = "android.widget.RelativeLayout";
@@ -88,6 +89,10 @@ public class ViewUtils {
         return LINEAR_LAYOUT_CLASS_NAME.equals(className) || RELATIVE_LAYOUT_CLASS_NAME.equals(className) || FRAME_LAYOUT_CLASS_NAME.equals(className);
     }
 
+    public static boolean isLinearOrRelativeLayoutClassName(String className) {
+        return LINEAR_LAYOUT_CLASS_NAME.equalsIgnoreCase(className) || RELATIVE_LAYOUT_CLASS_NAME.equalsIgnoreCase(className);
+    }
+
     public static boolean isCheckBox(RenderingView renderingView) {
         return CHECK_BOX_CLASS_NAME.equals(renderingView.getClassName());
     }
@@ -119,6 +124,7 @@ public class ViewUtils {
             case ViewUtils.IMAGE_BUTTON_CLASS_NAME:
             case ViewUtils.CHECKED_TEXT_VIEW_CLASS_NAME:
             case ViewUtils.RADIO_BUTTON_CLASS_NAME:
+            case ViewUtils.IMAGE_VIEW_CLASS_NAME:
                 textToReturn = text;
                 break;
 
@@ -141,7 +147,7 @@ public class ViewUtils {
         return false;
     }
 
-    private static boolean isTextOnOrOff(String text) {
+    public static boolean isTextOnOrOff(String text) {
         return text.toLowerCase().equals(ON_TEXT.toLowerCase())
                 || text.toLowerCase().equals(OFF_TEXT.toLowerCase());
     }

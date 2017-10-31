@@ -9,12 +9,29 @@ import java.util.*;
 
 public class UIScreen {
     private String id = Utils.EMPTY_STRING;
+    private String screenType = Utils.EMPTY_STRING;
     private String packageName = Utils.EMPTY_STRING;
     private String title = Utils.EMPTY_STRING;
+    private String subTitle = Utils.EMPTY_STRING;
     private List<UIPath> uiPaths;
     private HashMap<String, UIElement> uiElements;
     private HashMap<String, String> deviceInfo;
 
+    public String getSubTitle() {
+        return subTitle;
+    }
+
+    public void setSubTitle(String subTitle) {
+        this.subTitle = subTitle;
+    }
+
+    public String getScreenType() {
+        return screenType;
+    }
+
+    public void setScreenType(String screenType) {
+        this.screenType = screenType;
+    }
 
     public void setTitle(String title) {
         this.title = title;
@@ -25,7 +42,7 @@ public class UIScreen {
     }
 
     public String getId() {
-        return getScreenId(packageName, title, deviceInfo.toString());
+        return getScreenId(packageName, title, subTitle, screenType, deviceInfo.toString());
     }
 
     public UIScreen() {
@@ -115,26 +132,6 @@ public class UIScreen {
         return new ArrayList<UIElement>(uiElementListToReturn.values());
     }
 
-//    private List<UIElement> findElementsInScreenFuzzyOld(String className, String packageName, String text, boolean isClickable) {
-//        List<UIElement> uiElementListToReturn = new ArrayList<>();
-//        HashMap<String, Double> matchingUIElements = new HashMap<>();
-//        SimpleTextInterpreter textInterpreter = new SimpleTextInterpreter(0);
-//        for (UIElement uiElement: uiElements.values()) {
-//            //Do fuzzy search
-//            double matchMetric = textInterpreter.getMatchMetric(text, uiElement.getAllText());
-//            if ( matchMetric > 0 && (!isClickable || uiElement.isClickable())) {
-//                matchingUIElements.put(uiElement.id(), matchMetric);
-//            }
-//        }
-//        //Sort the hash map based on match metric
-//        Map<String, Double> sortedMetricMap = Utils.sortHashMapByValueDescending(matchingUIElements);
-//        for (HashMap.Entry<String, Double> entry : sortedMetricMap.entrySet()) {
-//            uiElementListToReturn.add(uiElements.get(entry.getKey()));
-//        }
-//        return uiElementListToReturn;
-//    }
-
-
     private List<UIElement> findElementsInScreenStrictNested(String className, String packageName,
                                                              String text, boolean needClickable) {
         Utils.printDebug("In Strict nested matching, input text " + text + " class: " + className + " pkg: " + packageName);
@@ -145,18 +142,6 @@ public class UIScreen {
         }
         return new ArrayList<>(uiElementMap.values());
     }
-
-//    private List<UIElement> findElementsInScreenStrict(String className, String packageName, String text, boolean isClickable) {
-//        List<UIElement> uiElementList = new ArrayList<>();
-//        for (UIElement uiElement: uiElements.values()) {
-//            if (uiElement.getClassName().equals(className) &&
-//                    uiElement.getPackageName().equals(packageName) &&
-//                    uiElement.isMatchForText(text)) {
-//                uiElementList.add(uiElement);
-//            }
-//        }
-//        return uiElementList;
-//    }
 
     public UIElement findTopLevelElementById(String elementId) {
         return uiElements.get(elementId);
@@ -182,11 +167,6 @@ public class UIScreen {
     }
 
 
-    public static String getScreenId(String packageName, String title, String deviceInfo) {
-        String toHash = packageName.toLowerCase() + "#" + title.replaceAll(" ", "_").toLowerCase() + "#" + deviceInfo.replaceAll(" ", "_").toLowerCase();
-        int hashCode = (toHash).hashCode();
-        return String.valueOf(hashCode);
-    }
 
     public boolean mergeScreen(UIScreen uiScreen) {
         if (!this.equals(uiScreen)) {
@@ -204,17 +184,16 @@ public class UIScreen {
 
         UIScreen uiScreen = (UIScreen) o;
 
+        if (!screenType.equals(uiScreen.screenType)) return false;
         if (!packageName.equals(uiScreen.packageName)) return false;
         if (!title.equals(uiScreen.title)) return false;
+        if (!subTitle.equals(uiScreen.subTitle)) return false;
         return deviceInfo.equals(uiScreen.deviceInfo);
     }
 
     @Override
     public int hashCode() {
-        int result = packageName.hashCode();
-        result = 31 * result + title.hashCode();
-        result = 31 * result + deviceInfo.hashCode();
-        return result;
+        return getScreenHash(packageName, title, subTitle, screenType, deviceInfo.toString());
     }
 
     public class UIElementTuple {
@@ -242,6 +221,19 @@ public class UIScreen {
         public void setTopLevelParent(UIElement topLevelParent) {
             this.topLevelParent = topLevelParent;
         }
+    }
+
+    private static int getScreenHash(String packageName, String title, String subTitle, String screenType, String deviceInfo) {
+        int result = packageName.toLowerCase().hashCode();
+        result = 31 * result + Utils.sanitizeText(title).hashCode();
+        result = 31 * result + Utils.sanitizeText(subTitle).hashCode();
+        result = 31 * result + Utils.sanitizeText(screenType).hashCode();
+        result = 31 * result + Utils.sanitizeText(deviceInfo).hashCode();
+        return result;
+    }
+
+    public static String getScreenId(String packageName, String title, String subTitle, String screenType, String deviceInfo) {
+        return String.valueOf(getScreenHash(packageName, title, subTitle, screenType, deviceInfo));
     }
 
 }

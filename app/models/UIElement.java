@@ -3,10 +3,7 @@ package models;
 import nlu.TextInterpreter;
 import util.Utils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class UIElement {
     private String id = Utils.EMPTY_STRING;
@@ -83,6 +80,17 @@ public class UIElement {
         }
         numToggleableChildren += uiElement.getNumToggleableChildren();
     }
+
+    public void finalizeChildElementIds() {
+        HashMap<String, UIElement> elementHashMap = new HashMap<>();
+        for (UIElement childElement: childElements.values()) {
+            childElement.finalizeChildElementIds();
+            String finalChildElementId = childElement.getId();
+            elementHashMap.put(finalChildElementId, childElement);
+        }
+        childElements = elementHashMap;
+    }
+
 
     public void add(UIAction uiAction) {
         this.uiActions.add(uiAction);
@@ -318,6 +326,25 @@ public class UIElement {
         public void setScore(double score) {
             this.score = score;
         }
+    }
+
+    public static UIElement findFirstParentWithGivenClassNames(String elementId, Set<String> classNames, UIElement topLevelParent) {
+        if (topLevelParent == null) {
+            return null;
+        }
+
+        if (classNames.contains(topLevelParent.getClassName()) &&
+                topLevelParent.getChildElements().keySet().contains(elementId)) {
+            //Found it, return this
+            return topLevelParent;
+        }
+        for (UIElement uiElement: topLevelParent.getChildElements().values()) {
+            UIElement matchingParentElement = findFirstParentWithGivenClassNames(elementId, classNames, uiElement);
+            if (matchingParentElement != null) {
+                return matchingParentElement;
+            }
+        }
+        return null;
     }
 
 }

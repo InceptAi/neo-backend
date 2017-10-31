@@ -1,13 +1,21 @@
 package views;
 
 import util.Utils;
+import util.ViewUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 public class CrawlingInput {
+    public static final String FULL_SCREEN_MODE = "FULL";
+    public static final String PARTIAL_SCREEN_MODE = "PARTIAL";
+    public static final String UNDEFINED_SCREEN_MODE = "UNDEFINED";
     private int numViews;
+    private String rootSubTitle;
+    private String lastScreenSubTitle;
+    private String currentScreenType;
+    private String lastScreenType;
     private int rootHeight;
     private int rootWidth;
     private String rootTitle;
@@ -37,6 +45,33 @@ public class CrawlingInput {
         this.rootPackageName = rootPackageName;
         this.deviceInfo = deviceInfo;
         this.viewMap = viewMap;
+    }
+
+
+    public String getRootSubTitle() {
+        String subtitle = Utils.sanitizeText(rootSubTitle);
+        if (ViewUtils.isTextOnOrOff(subtitle)) {
+            return ViewUtils.ON_OFF_TEXT;
+        } else {
+            return subtitle;
+        }
+    }
+
+    public String getLastScreenSubTitle() {
+        String subtitle = Utils.sanitizeText(lastScreenSubTitle);
+        if (ViewUtils.isTextOnOrOff(subtitle)) {
+            return ViewUtils.ON_OFF_TEXT;
+        } else {
+            return subtitle;
+        }
+    }
+
+    public String getCurrentScreenType() {
+        return currentScreenType;
+    }
+
+    public String getLastScreenType() {
+        return lastScreenType;
     }
 
     public String getRootPackageName() {

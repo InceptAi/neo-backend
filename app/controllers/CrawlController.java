@@ -62,10 +62,10 @@ public class CrawlController extends Controller {
         return ok(Utils.createResponse(jsonData, true));
     }
 
-    public Result delete(String packageName, String title, String deviceInfo) {
-        if (!UIScreenStore.getInstance().deleteScreen(UIScreen.getScreenId(packageName, title, deviceInfo))) {
-            return notFound(Utils.createResponse("Screen with title:" + title + " not found", false));
-        }
-        return ok(Utils.createResponse("Screen with getId:" + title + " deleted", true));
-    }
+//    public Result delete(String packageName, String title, String deviceInfo) {
+//        if (!UIScreenStore.getInstance().deleteScreen(UIScreen.getScreenId(packageName, title, deviceInfo))) {
+//            return notFound(Utils.createResponse("Screen with title:" + title + " not found", false));
+//        }
+//        return ok(Utils.createResponse("Screen with getId:" + title + " deleted", true));
+//    }
 }

@@ -15,11 +15,13 @@ public class UIScreenStore {
     private static UIScreenStore instance;
     private Map<String, UIScreen> uiScreenMap;
     private Map<String, Set<String>> packageNameToScreenIdMap;
+    private Map<String, Set<String>> screenTitleToScreenIdMap;
     private TextInterpreter textInterpreter;
 
     private UIScreenStore() {
         uiScreenMap = new HashMap<>();
         packageNameToScreenIdMap = new HashMap<>();
+        screenTitleToScreenIdMap = new HashMap<>();
         textInterpreter = new SimpleTextInterpreter();
     }
 
@@ -43,14 +45,25 @@ public class UIScreenStore {
             }
         }
         addScreenToPackageMap(uiScreen);
+        addScreenToTitleMap(uiScreen);
         return currentScreen;
     }
 
-    public UIScreen getScreen(String packageName, String title, String deviceInfo) {
+    public UIScreen getScreen(String packageName, String title, String subTitle, String screenType, String deviceInfo) {
         if (Utils.nullOrEmpty(deviceInfo)) {
             return getScreen(packageName, title);
         }
-        return uiScreenMap.get(UIScreen.getScreenId(packageName, title, deviceInfo));
+        Set<String> screenIdListForTitleAndPackage = screenTitleToScreenIdMap.get(getKeyForTitleMap(title, packageName, screenType));
+        if (screenIdListForTitleAndPackage != null) {
+            ArrayList<String> screenIdList = new ArrayList<>(screenIdListForTitleAndPackage);
+            if (screenIdList.size() == 1) {
+                //One match only -- bingo
+                return uiScreenMap.get(screenIdList.get(0));
+            } else {
+                return uiScreenMap.get(UIScreen.getScreenId(packageName, title, subTitle, screenType, deviceInfo));
+            }
+        }
+        return null;
     }
 
     private UIScreen getScreen(String packageName, String title) {
@@ -94,6 +107,39 @@ public class UIScreenStore {
         } else if (!screenList.contains(uiScreen.getId())) {
             screenList.add(uiScreen.getId());
         }
+    }
+
+    private String getKeyForTitleMap(String title, String packageName, String screenType) {
+        String key = title + " " + packageName + " " + screenType;
+        return Utils.sanitizeText(key);
+    }
+
+    private void addScreenToTitleMap(UIScreen uiScreen) {
+        String keyForTitleMap = getKeyForTitleMap(uiScreen.getTitle(), uiScreen.getPackageName(), uiScreen.getScreenType());
+        Set<String> screenList = screenTitleToScreenIdMap.get(keyForTitleMap);
+        if (screenList == null) {
+            screenList = new HashSet<>();
+            screenList.add(uiScreen.getId());
+            screenTitleToScreenIdMap.put(keyForTitleMap, screenList);
+        } else if (!screenList.contains(uiScreen.getId())) {
+            screenList.add(uiScreen.getId());
+        }
+    }
+
+    public UIScreen findTopMatchingScreenIdByKeywordAndScreenType(String keyWords, String packageName, String screenType) {
+        final double MAX_GAP_FOR_CONFIDENCE = 0.2;
+        Map<String, Double> confidenceScores = findScreenIdsByKeywords(keyWords, packageName, MAX_GAP_FOR_CONFIDENCE);
+        if (confidenceScores.size() != 1) {
+            return null;
+        }
+        //Search in all screens navigational elements for this match
+        for (HashMap.Entry<String, Double> entry : confidenceScores.entrySet()) {
+            UIScreen matchingScreen = uiScreenMap.get(entry.getKey());
+            if (matchingScreen != null && matchingScreen.getScreenType().equalsIgnoreCase(screenType)) {
+                return matchingScreen;
+            }
+        }
+        return null;
     }
 
     public UIScreen findTopMatchingScreenIdByKeyword(String keyWords, String packageName) {
