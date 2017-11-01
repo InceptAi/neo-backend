@@ -25,6 +25,7 @@ public class SemanticAction {
         switch (uiElement.getClassName()) {
             case ViewUtils.SWITCH_CLASS_NAME:
             case ViewUtils.CHECK_BOX_CLASS_NAME:
+            case ViewUtils.TOGGLE_BUTTON_CLASS_NAME:
                 if (parentElement != null) {
                     if (!parentElement.isClickable()) {
                         //Parent element is not clickable need to add actionName and text here

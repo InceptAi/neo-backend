@@ -163,11 +163,14 @@ public class ActionResponseHelper {
     public static Condition create(SemanticAction semanticAction, String matchingDescription) {
         Condition condition = null;
         switch (SemanticActionType.typeStringToEnum(semanticAction.getSemanticActionName())) {
+            //TODO Handle checked text view separately -- use SELECT instead of toggle and create conditions accordingly
             case TOGGLE:
                 if (Utils.containsWord(matchingDescription, ViewUtils.ON_TEXT)) {
                     condition = new Condition(ViewUtils.ON_TEXT.toLowerCase());
                 } else if (Utils.containsWord(matchingDescription, ViewUtils.OFF_TEXT)) {
                     condition = new Condition(ViewUtils.OFF_TEXT.toLowerCase());
+                } else {
+                    condition = new Condition(semanticAction.getSemanticActionDescription());
                 }
                 break;
             case SEEK:

@@ -19,6 +19,7 @@ public class ViewUtils {
     public static final String EDIT_TEXT_VIEW_CLASS_NAME = "android.widget.EditText";
     public static final String BUTTON_CLASS_NAME = "android.widget.Button";
     public static final String RADIO_BUTTON_CLASS_NAME = "android.widget.RadioButton";
+    public static final String TOGGLE_BUTTON_CLASS_NAME = "android.widget.ToggleButton";
 
 
 
@@ -69,6 +70,7 @@ public class ViewUtils {
         return new HashMap<String , String>() {{
             put(ViewUtils.SWITCH_TEXT.trim().toLowerCase(), replacementText.toLowerCase());
             put(ViewUtils.ON_OFF_TEXT.trim().toLowerCase(), replacementText.toLowerCase());
+            put(ViewUtils.CHECK_BOX_TEXT.trim().toLowerCase(), replacementText.toLowerCase());
         }};
     }
 
@@ -102,6 +104,7 @@ public class ViewUtils {
         switch (className) {
 
             case ViewUtils.SWITCH_CLASS_NAME:
+            case ViewUtils.TOGGLE_BUTTON_CLASS_NAME:
                 textToReturn = SWITCH_TEXT;
                 break;
 
@@ -156,7 +159,8 @@ public class ViewUtils {
         return className.equalsIgnoreCase(SWITCH_CLASS_NAME) ||
                 className.equalsIgnoreCase(CHECK_BOX_CLASS_NAME) ||
                 className.equalsIgnoreCase(CHECKED_TEXT_VIEW_CLASS_NAME) ||
-                className.equalsIgnoreCase(RADIO_BUTTON_CLASS_NAME);
+                className.equalsIgnoreCase(RADIO_BUTTON_CLASS_NAME) ||
+                className.equalsIgnoreCase(TOGGLE_BUTTON_CLASS_NAME);
     }
 
     public static String getTitleFromView(HashMap<Long, RenderingView> renderingViewHashMap) {

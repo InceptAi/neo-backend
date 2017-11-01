@@ -194,11 +194,14 @@ public class UIScreenStore {
                 continue;
             }
             UIScreen srcScreen = uiScreenMap.get(lastStep.getSrcScreenId());
-            if (srcScreen == null) {
+            if (srcScreen == null || srcScreen.getUiElements() == null) {
                 //SrcScreen can't be null
                 Utils.printDebug("We should never come here");
             }
             UIElement lastUIElement = srcScreen.getUiElements().get(lastStep.getUiElementId());
+            if (lastUIElement == null) {
+                Utils.printDebug("We should never come here");
+            }
             double matchMetric = textInterpreter.getMatchMetric(keyWords, lastUIElement.getAllText());
             if (matchMetric > bestMatchMetric) {
                 bestMatchMetric = matchMetric;

@@ -117,18 +117,29 @@ public class Utils {
         if (nullOrEmpty(inputText)) {
             return new ArrayList<>();
         }
-//        inputText = inputText.replaceAll(ViewUtils.SWITCH_TEXT, "ON#OFF");
-//        inputText = inputText.replaceAll(ViewUtils.ON_OFF_TEXT, "ON#OFF");
         //Remove duplicates
         Set<String> keywordListToReturn = new HashSet<>();
         List<String> inputWords = Arrays.asList(inputText.split(" "));
         for (String word: inputWords) {
-            if (word.equals(ViewUtils.SWITCH_TEXT) || word.equals(ViewUtils.ON_OFF_TEXT)) {
+            if (word.equals(ViewUtils.SWITCH_TEXT) || word.equals(ViewUtils.CHECK_BOX_TEXT)) {
+                continue; //We don't need to match the switch text specifically -- since we will be matching
+                // other keywords for context
+            }
+
+            if (word.equals(ViewUtils.ON_OFF_TEXT)) {
                 word = ViewUtils.ON_OFF_KEYWORD_REPLACEMENT;
             }
+
+
             if (!keywordListToReturn.contains(word)) {
                 keywordListToReturn.add(word);
             }
+
+            //TODO: File Bug in accessibilitySearchByText -- doesn't match switch class text
+            // if (word.equals(ViewUtils.SWITCH_TEXT) || word.equals(ViewUtils.ON_OFF_TEXT) || word.equals(ViewUtils.CHECK_BOX_TEXT)) {
+            //       word = ViewUtils.ON_OFF_KEYWORD_REPLACEMENT;
+            //   }
+
         }
         return new ArrayList<>(keywordListToReturn);
     }
