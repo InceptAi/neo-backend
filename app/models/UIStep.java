@@ -23,24 +23,24 @@ public class UIStep {
 
     private String srcScreenId;
     private String uiElementId;
-    private String uiActionId;
+    private String uiEventId;
     private String uiStepTypeId;
     private String dstScreenId;
 
     public UIStep(String srcScreenId, String dstScreenId,
-                  String uiElementId, String uiActionId,
+                  String uiElementId, String uiEventId,
                   String uiStepTypeId) {
         this.srcScreenId = srcScreenId;
         this.dstScreenId = dstScreenId;
         this.uiElementId = uiElementId;
-        this.uiActionId = uiActionId;
+        this.uiEventId = uiEventId;
         this.uiStepTypeId = uiStepTypeId;
     }
 
     public UIStep() {
         this.uiElementId = Utils.EMPTY_STRING;
         this.srcScreenId = Utils.EMPTY_STRING;
-        this.uiActionId = Utils.EMPTY_STRING;
+        this.uiEventId = Utils.EMPTY_STRING;
         this.dstScreenId = Utils.EMPTY_STRING;
         this.uiStepTypeId = UIStepType.UNDEFINED.id();
     }
@@ -49,7 +49,7 @@ public class UIStep {
         this.srcScreenId = uiStep.srcScreenId;
         this.dstScreenId = uiStep.dstScreenId;
         this.uiElementId = uiStep.uiElementId;
-        this.uiActionId = uiStep.uiActionId;
+        this.uiEventId = uiStep.uiEventId;
         this.uiStepTypeId = uiStep.uiStepTypeId;
     }
 
@@ -73,17 +73,12 @@ public class UIStep {
         return uiElementId;
     }
 
-    public String getUiActionId() {
-        return uiActionId;
+    public String getUiEventId() {
+        return uiEventId;
     }
 
     public String getUiStepTypeId() {
         return uiStepTypeId;
-    }
-
-    public String getId() {
-        String idToHash = srcScreenId + "#" + uiElementId + "#" + uiActionId;
-        return String.valueOf(idToHash.hashCode());
     }
 
     public boolean isUndefined() {
@@ -105,7 +100,7 @@ public class UIStep {
         return "UIStep{" +
                 "srcScreenId='" + srcScreenId + '\'' +
                 ", uiElementId='" + uiElementId + '\'' +
-                ", uiActionId='" + uiActionId + '\'' +
+                ", uiEventId='" + uiEventId + '\'' +
                 ", uiStepTypeId='" + uiStepTypeId + '\'' +
                 ", dstScreenId='" + dstScreenId + '\'' +
                 '}';
@@ -120,8 +115,6 @@ public class UIStep {
 
         if (!srcScreenId.equals(uiStep.srcScreenId)) return false;
         if (!uiElementId.equals(uiStep.uiElementId)) return false;
-        if (!uiActionId.equals(uiStep.uiActionId)) return false;
-        if (!uiStepTypeId.equals(uiStep.uiStepTypeId)) return false;
         return dstScreenId.equals(uiStep.dstScreenId);
     }
 
@@ -129,8 +122,6 @@ public class UIStep {
     public int hashCode() {
         int result = srcScreenId.hashCode();
         result = 31 * result + uiElementId.hashCode();
-        result = 31 * result + uiActionId.hashCode();
-        result = 31 * result + uiStepTypeId.hashCode();
         result = 31 * result + dstScreenId.hashCode();
         return result;
     }

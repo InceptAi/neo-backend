@@ -1,12 +1,10 @@
 package storage;
 
-import models.UIElement;
 import models.UIPath;
 import models.UIScreen;
 import models.UIStep;
 import nlu.SimpleTextInterpreter;
 import nlu.TextInterpreter;
-import scala.concurrent.java8.FuturesConvertersImpl;
 import util.Utils;
 
 import java.util.*;
@@ -129,9 +127,9 @@ public class UIScreenStore {
     public UIScreen findTopMatchingScreenIdByKeywordAndScreenType(String keyWords, String packageName, String screenType) {
         final double MAX_GAP_FOR_CONFIDENCE = 0.2;
         Map<String, Double> confidenceScores = findScreenIdsByKeywords(keyWords, packageName, MAX_GAP_FOR_CONFIDENCE);
-        if (confidenceScores.size() != 1) {
-            return null;
-        }
+//        if (confidenceScores.size() != 1) {
+//            return null;
+//        }
         //Search in all screens navigational elements for this match
         for (HashMap.Entry<String, Double> entry : confidenceScores.entrySet()) {
             UIScreen matchingScreen = uiScreenMap.get(entry.getKey());
@@ -164,9 +162,10 @@ public class UIScreenStore {
         double bestMetric = 0;
         for (String screenId: screenIdSet) {
             UIScreen uiScreen = uiScreenMap.get(screenId);
-            double matchMetric = textInterpreter.getMatchMetric(keyWords, uiScreen.getTitle());
-            double navigationMetric = findBestNavigationStepMetricByKeyWords(keyWords, uiScreen);
-            double totalMetric = navigationMetric >= 0 ? (navigationMetric + matchMetric) / 2 : matchMetric;
+            double totalMetric = textInterpreter.getMatchMetric(keyWords, uiScreen.getTitle());
+            //double matchMetric = textInterpreter.getMatchMetric(keyWords, uiScreen.getTitle());
+            //double navigationMetric = findBestNavigationStepMetricByKeyWords(keyWords, uiScreen);
+            //double totalMetric = navigationMetric >= 0 ? (navigationMetric + matchMetric) / 2 : matchMetric;
             if (bestMetric < totalMetric) {
                 bestMetric = totalMetric;
             }
@@ -174,7 +173,8 @@ public class UIScreenStore {
         }
 
         //Search in all screens navigational elements for this match
-        for (HashMap.Entry<String, Double> entry : screenIdToConfidenceHashMap.entrySet()) {
+        Map<String, Double> sortedConfidenceHashMap = Utils.sortHashMapByValueDescending(screenIdToConfidenceHashMap);
+        for (HashMap.Entry<String, Double> entry : sortedConfidenceHashMap.entrySet()) {
             if (entry.getValue() > bestMetric - maxGapFromBest && entry.getValue() > 0) {
                 screenIdsToReturn.put(entry.getKey(), entry.getValue());
             }
@@ -198,11 +198,13 @@ public class UIScreenStore {
                 //SrcScreen can't be null
                 Utils.printDebug("We should never come here");
             }
-            UIElement lastUIElement = srcScreen.getUiElements().get(lastStep.getUiElementId());
-            if (lastUIElement == null) {
+            UIScreen.UIElementTuple lastUIElementTuple = srcScreen.findElementAndTopLevelParentById(lastStep.getUiElementId());
+            //UIElement lastUIElement = srcScreen.getUiElements().get(lastStep.getUiElementId());
+            if (lastUIElementTuple == null || lastUIElementTuple.getUiElement() != null) {
                 Utils.printDebug("We should never come here");
             }
-            double matchMetric = textInterpreter.getMatchMetric(keyWords, lastUIElement.getAllText());
+            assert lastUIElementTuple != null && lastUIElementTuple.getUiElement() != null;
+            double matchMetric = textInterpreter.getMatchMetric(keyWords, lastUIElementTuple.getUiElement().getAllText());
             if (matchMetric > bestMatchMetric) {
                 bestMatchMetric = matchMetric;
             }

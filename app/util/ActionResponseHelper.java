@@ -149,7 +149,7 @@ public class ActionResponseHelper {
                     uiElement.getPackageName(),
                     uiElement.getAllText()); //
             NavigationIdentifier navigationIdentifier = new NavigationIdentifier(srcIdentifier, dstIdentifier,
-                    elementIdentifier, uiStep.getUiActionId());
+                    elementIdentifier, uiStep.getUiEventId());
             navigationIdentifierList.add(navigationIdentifier);
         }
         return navigationIdentifierList;

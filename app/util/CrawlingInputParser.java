@@ -9,6 +9,8 @@ import views.RenderingView;
 import javax.annotation.Nullable;
 import java.util.*;
 
+import static views.CrawlingInput.PARTIAL_SCREEN_MODE;
+
 public class CrawlingInputParser {
 
     public static boolean shouldProcess(String lastEventType) {
@@ -166,7 +168,7 @@ public class CrawlingInputParser {
                         //findTopLevelElementById(uiStep.getUiElementId());
                         if (lastElement != null) {
                             Utils.printDebug("Adding navigational step to element: " + lastElement.toString());
-                            lastElement.add(new NavigationalAction(uiStep.getUiActionId(), currentScreenId));
+                            lastElement.add(new NavigationalAction(uiStep.getUiEventId(), currentScreenId));
                             Utils.printDebug("Adding uiStep to lastPaths");
                             screenToBeCreated.setUiPaths(MergeUtils.getUIPathBasedOnLastScreenPath(lastScreenUiPaths, uiStep));
                             Utils.printDebug("New UI Path: " + screenToBeCreated.getUiPaths().toString());
@@ -220,7 +222,7 @@ public class CrawlingInputParser {
         //Check if the text of lastViewClicked matches with
         UIScreen lastScreen =  null;
         UIElement lastElement = null;
-        UIAction lastUIAction = UIAction.actionStringToEnum(lastAction);
+        UIEvent lastUIEvent = UIEvent.eventStringToEnum(lastAction);
         UIStep.UIStepType uiStepType = UIStep.UIStepType.UNDEFINED;
         String lastScreenId = Utils.EMPTY_STRING;
 
@@ -240,11 +242,15 @@ public class CrawlingInputParser {
         }
 
         //We need fuzzy matching for window state changed as text is Advanced Wi-Fi while in menu text is Advanced
-        boolean isTypeWindowStateChanged = lastUIAction.equals(UIAction.WINDOW_STATE_CHANGE);
+//        boolean isFuzzySearchNeeded = lastUIEvent.equals(UIEvent.TYPE_WINDOW_STATE_CHANGED)
+
+        boolean isFuzzySearchNeeded = lastUIEvent.equals(UIEvent.TYPE_WINDOW_STATE_CHANGED) &&
+                lastScreen.getScreenType().equalsIgnoreCase(PARTIAL_SCREEN_MODE);
+
 
         if (lastScreenId.equalsIgnoreCase(currentScreen.getId())) {
             uiStepType = UIStep.UIStepType.WITHIN_SAME_SCREEN;
-        } else if (isTypeWindowStateChanged){
+        } else if (isFuzzySearchNeeded){
             uiStepType = UIStep.UIStepType.SOFT_STEP_INTER_SCREEN;
         } else {
             uiStepType = UIStep.UIStepType.TO_ANOTHER_SCREEN;
@@ -256,7 +262,7 @@ public class CrawlingInputParser {
                 lastViewClicked.getPackageName(),
                 lastViewClicked.getOverallText(),
                 true,
-                isTypeWindowStateChanged);
+                isFuzzySearchNeeded);
 
         //If more than one, take the top one for now
         // TODO sort the elements based on level of text matching --
@@ -274,7 +280,7 @@ public class CrawlingInputParser {
         }
 
         //Create a UI Step and add to the path
-        return new UIStep(lastScreenId, currentScreen.getId(), lastElement.getId(), lastUIAction.id(), uiStepType.id());
+        return new UIStep(lastScreenId, currentScreen.getId(), lastElement.getId(), lastUIEvent.id(), uiStepType.id());
     }
 
     public static UIElement createUIElementFromRenderingView(RenderingView renderingView) {
