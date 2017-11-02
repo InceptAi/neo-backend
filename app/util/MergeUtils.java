@@ -6,6 +6,31 @@ import java.util.*;
 
 public class MergeUtils {
 
+    public static UIStepTable mergeUITables(UIStepTable uiStepTable1, UIStepTable uiStepTable2) {
+
+        if (uiStepTable1 == null && uiStepTable2 == null) {
+            return null;
+        } else if (uiStepTable1 == null) {
+            return uiStepTable2;
+        } else if (uiStepTable2 == null) {
+            return uiStepTable1;
+        }
+
+        UIStepTable mergedTable = new UIStepTable();
+        mergedTable.getUiStepMap().putAll(uiStepTable1.getUiStepMap());
+        Set<String> keys2 = uiStepTable2.getKeys();
+        for (String key: keys2) {
+            Set<UIStep> uiStepSet2 = uiStepTable2.getSteps(key);
+            Set<UIStep> mergedSet = mergedTable.getSteps(key);
+            if (mergedSet == null) {
+                mergedSet = new HashSet<>();
+                mergedTable.getUiStepMap().put(key, mergedSet);
+            }
+            mergedSet.addAll(uiStepSet2);
+        }
+        return mergedTable;
+    }
+
     public static List<UIPath> mergeUIPaths(List<UIPath> uiPathListOld, List<UIPath> uiPathListUpdated) {
         HashMap<String, UIPath> uiPathMapOld = new HashMap<>();
         HashMap<String, UIPath> uiPathMapUpdated = new HashMap<>();

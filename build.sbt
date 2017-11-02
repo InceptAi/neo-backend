@@ -8,6 +8,9 @@ scalaVersion := "2.12.2"
 
 libraryDependencies += guice
 
+//JgraphT
+libraryDependencies += "org.jgrapht" % "jgrapht-core" % "1.0.1"
+
 // Test Database
 libraryDependencies += "com.h2database" % "h2" % "1.4.194"
 

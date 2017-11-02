@@ -1,6 +1,7 @@
 package models;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class UIPath {
@@ -39,6 +40,18 @@ public class UIPath {
             return null;
         }
         return new UIPath(uiPath);
+    }
+
+    public UIPath() {
+        this.semanticActionType = SemanticActionType.UNDEFINED;
+        this.uiSteps = new ArrayList<>();
+        this.pathType = UIPathType.UNDEFINED;
+    }
+
+    public UIPath(List<UIStep> uiSteps) {
+        this.semanticActionType = SemanticActionType.UNDEFINED;
+        this.uiSteps = uiSteps;
+        this.pathType = UIPathType.UNDEFINED;
     }
 
     public UIPath(SemanticActionType semanticActionType, UIStep uiStep) {
@@ -167,5 +180,29 @@ public class UIPath {
             subPath.uiSteps.add(UIStep.copyStep(uiStep));
         }
         return subPath;
+    }
+
+    public static class UIPathComparator implements Comparator<UIPath> {
+        @Override
+        public int compare(UIPath path1, UIPath path2) {
+            //0 if equal
+            //-1 if nodeInfo1 is smaller
+            //1 if nodeInfo2 is smaller
+            if (path1 == null && path2 == null) {
+                return 0;
+            } else if (path1 == null) {
+                return 1;
+            } else if (path2 == null) {
+                return -1;
+            } else {
+                if (path1.equals(path2)) {
+                    return 0;
+                } else if (path1.length() < path2.length()) {
+                    return -1;
+                } else {
+                    return 1;
+                }
+            }
+        }
     }
 }

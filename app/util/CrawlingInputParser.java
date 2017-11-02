@@ -1,6 +1,7 @@
 package util;
 
 import models.*;
+import storage.NavigationGraphStore;
 import storage.SemanticActionStore;
 import storage.UIScreenStore;
 import views.CrawlingInput;
@@ -18,18 +19,6 @@ public class CrawlingInputParser {
             return false;
         }
         return true;
-//        switch (lastEventType.toUpperCase()) {
-//            case "TYPE_VIEW_CLICKED":
-//            case "TYPE_WINDOW_STATE_CHANGED":
-//            case "TYPE_VIEW_LONG_CLICKED":
-//            case "TYPE_VIEW_CONTEXT_CLICKED":
-//            case "TYPE_VIEW_SELECTED":
-//            case "TYPE_VIEW_SCROLLED":
-//            case "TYPE_VIEW_TEXT_CHANGED":
-//                return true;
-//            default:
-//                return false;
-//        }
     }
 
     public static UIScreen parseCrawlingInput(CrawlingInput crawlingInput) {
@@ -170,8 +159,12 @@ public class CrawlingInputParser {
                             Utils.printDebug("Adding navigational step to element: " + lastElement.toString());
                             lastElement.add(new NavigationalAction(uiStep.getUiEventId(), currentScreenId));
                             Utils.printDebug("Adding uiStep to lastPaths");
+                            lastScreen.addUIStepForDestinationScreen(screenToBeCreated.getId(), uiStep);
+                            screenToBeCreated.addUIStepToCurrentScreen(uiStep);
                             screenToBeCreated.setUiPaths(MergeUtils.getUIPathBasedOnLastScreenPath(lastScreenUiPaths, uiStep));
                             Utils.printDebug("New UI Path: " + screenToBeCreated.getUiPaths().toString());
+                            //Add this edge to the graph
+                            NavigationGraphStore.getInstance().addNavigationEdgeToGraph(uiStep);
                         }
                     } else if (uiStep.isWithinSameScreen()) {
                         Utils.printDebug("Within Screen UI Step");

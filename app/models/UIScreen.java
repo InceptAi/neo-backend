@@ -13,6 +13,8 @@ public class UIScreen {
     private String packageName = Utils.EMPTY_STRING;
     private String title = Utils.EMPTY_STRING;
     private String subTitle = Utils.EMPTY_STRING;
+    private UIStepTable nextStepToScreens;
+    private UIStepTable lastStepToCurrentScreen;
     private List<UIPath> uiPaths;
     private HashMap<String, UIElement> uiElements;
     private HashMap<String, String> deviceInfo;
@@ -49,6 +51,8 @@ public class UIScreen {
         this.uiPaths = new ArrayList<>();
         this.uiElements = new HashMap<>();
         this.deviceInfo = new HashMap<>();
+        this.nextStepToScreens = new UIStepTable();
+        this.lastStepToCurrentScreen = new UIStepTable();
     }
 
     public void setUiPaths(List<UIPath> uiPaths) {
@@ -63,9 +67,20 @@ public class UIScreen {
         this.uiElements.put(uiElement.id(), uiElement);
     }
 
-    public void update(String odlElementId, UIElement uiElement) {
-        this.uiElements.remove(odlElementId);
-        this.uiElements.put(uiElement.id(), uiElement);
+    public void addUIStepForDestinationScreen(String destId, UIStep uiStep) {
+        nextStepToScreens.addStep(destId, uiStep);
+    }
+
+    public void addUIStepToCurrentScreen(UIStep uiStep) {
+        lastStepToCurrentScreen.addStep(getId(), uiStep);
+    }
+
+    public UIStepTable getNextStepToScreens() {
+        return nextStepToScreens;
+    }
+
+    public UIStepTable getLastStepToCurrentScreen() {
+        return lastStepToCurrentScreen;
     }
 
     public List<UIPath> getUiPaths() {
@@ -174,6 +189,8 @@ public class UIScreen {
         }
         uiElements = MergeUtils.mergeUIElements(uiElements, uiScreen.getUiElements());
         uiPaths = MergeUtils.mergeUIPaths(uiPaths, uiScreen.getUiPaths());
+        nextStepToScreens = MergeUtils.mergeUITables(nextStepToScreens, uiScreen.getNextStepToScreens());
+        lastStepToCurrentScreen = MergeUtils.mergeUITables(lastStepToCurrentScreen, uiScreen.getLastStepToCurrentScreen());
         return true;
     }
 

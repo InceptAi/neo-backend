@@ -2,6 +2,7 @@ package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import graph.ShortestPathFinder;
 import graph.SimplePathFinder;
 import models.SemanticAction;
 import play.mvc.Controller;
@@ -35,7 +36,8 @@ public class ActionController extends Controller {
                 baseScreenTitle,
                 subTitle,
                 deviceInfo,
-                new SimplePathFinder(),
+                //new SimplePathFinder(),
+                new ShortestPathFinder(),
                 DEFAULT_MAX_RESULTS_FOR_ACTION_SEARCH,
                 fuzzySearch);
         ObjectMapper mapper = new ObjectMapper();
@@ -51,7 +53,9 @@ public class ActionController extends Controller {
                 SETTINGS_PACKAGE_NAME,
                 SETTINGS_TITLE,
                 SETTINGS_SUBTITLE,
-                deviceInfo, new SimplePathFinder(),
+                deviceInfo,
+                //new SimplePathFinder(),
+                new ShortestPathFinder(),
                 DEFAULT_MAX_RESULTS_FOR_ACTION_SEARCH,
                 fuzzySearch);
         ObjectMapper mapper = new ObjectMapper();
