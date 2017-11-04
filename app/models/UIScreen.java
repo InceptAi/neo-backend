@@ -9,15 +9,34 @@ import java.util.*;
 
 public class UIScreen {
     private String id = Utils.EMPTY_STRING;
+    private String parentScreenId = Utils.EMPTY_STRING;
     private String screenType = Utils.EMPTY_STRING;
     private String packageName = Utils.EMPTY_STRING;
     private String title = Utils.EMPTY_STRING;
     private String subTitle = Utils.EMPTY_STRING;
-    private UIStepTable nextStepToScreens;
-    private UIStepTable lastStepToCurrentScreen;
+    private HashMap<String, UIStep> nextStepToScreens;
+    private HashMap<String, UIStep> lastStepToCurrentScreen;
     private List<UIPath> uiPaths;
     private HashMap<String, UIElement> uiElements;
     private HashMap<String, String> deviceInfo;
+    private HashMap<String, UIScreen> childScreens;
+
+    public String getParentScreenId() {
+        return parentScreenId;
+    }
+
+    public void setParentScreenId(String parentScreenId) {
+        this.parentScreenId = parentScreenId;
+    }
+
+
+    public void setNextStepToScreens(HashMap<String, UIStep> nextStepToScreens) {
+        this.nextStepToScreens = nextStepToScreens;
+    }
+
+    public void setLastStepToCurrentScreen(HashMap<String, UIStep> lastStepToCurrentScreen) {
+        this.lastStepToCurrentScreen = lastStepToCurrentScreen;
+    }
 
     public String getSubTitle() {
         return subTitle;
@@ -51,8 +70,9 @@ public class UIScreen {
         this.uiPaths = new ArrayList<>();
         this.uiElements = new HashMap<>();
         this.deviceInfo = new HashMap<>();
-        this.nextStepToScreens = new UIStepTable();
-        this.lastStepToCurrentScreen = new UIStepTable();
+        this.nextStepToScreens = new HashMap<>();
+        this.lastStepToCurrentScreen = new HashMap<>();
+        this.childScreens = new HashMap<>();
     }
 
     public void setUiPaths(List<UIPath> uiPaths) {
@@ -68,18 +88,22 @@ public class UIScreen {
     }
 
     public void addUIStepForDestinationScreen(String destId, UIStep uiStep) {
-        nextStepToScreens.addStep(destId, uiStep);
+        nextStepToScreens.put(destId, uiStep);
+    }
+
+    public void addChildScreen(UIScreen childScreen) {
+        childScreens.put(childScreen.getId(), childScreen);
     }
 
     public void addUIStepToCurrentScreen(UIStep uiStep) {
-        lastStepToCurrentScreen.addStep(getId(), uiStep);
+        lastStepToCurrentScreen.put(getId(), uiStep);
     }
 
-    public UIStepTable getNextStepToScreens() {
+    public HashMap<String, UIStep> getNextStepToScreens() {
         return nextStepToScreens;
     }
 
-    public UIStepTable getLastStepToCurrentScreen() {
+    public HashMap<String, UIStep> getLastStepToCurrentScreen() {
         return lastStepToCurrentScreen;
     }
 
@@ -111,6 +135,37 @@ public class UIScreen {
         this.deviceInfo = deviceInfo;
     }
 
+    public HashMap<String, List<UIElement>> findElementsInScreenHierarchical(String className,
+                                                                             String packageName,
+                                                                             String text,
+                                                                             boolean needClickable,
+                                                                             boolean fuzzySearch) {
+        //Look in the main screen first
+        HashMap<String, List<UIElement>> stringListHashMap = new HashMap<>();
+        List<UIElement> uiElementListMainScreen = new ArrayList<>();
+        if (fuzzySearch) {
+            uiElementListMainScreen.addAll(findElementsInScreenFuzzyNested(className, packageName, text, needClickable));
+        } else {
+            uiElementListMainScreen.addAll(findElementsInScreenStrictNested(className, packageName, text, needClickable));
+        }
+
+        if (uiElementListMainScreen.isEmpty()) { //Only find in subScreens if nothing in main screen
+            //Find in subScreens
+            boolean enableFuzzySearchInChildScreens = true;
+            for (UIScreen uiScreen: childScreens.values()) {
+                stringListHashMap.putAll(uiScreen.findElementsInScreenHierarchical(
+                        className,
+                        packageName,
+                        text,
+                        needClickable,
+                        true));
+            }
+        } else {
+            stringListHashMap.put(getId(), uiElementListMainScreen);
+        }
+        return stringListHashMap;
+    }
+
     public List<UIElement> findElementsInScreen(String className, String packageName,
                                                 String text, boolean needClickable,
                                                 boolean fuzzySearch) {
@@ -124,27 +179,32 @@ public class UIScreen {
 
     private List<UIElement> findElementsInScreenFuzzyNested(String className, String packageName, String text, boolean needClickable) {
         final double MIN_MATCH_PERCENTAGE_FOR_ELEMENT = 0.5;
+        final double MAX_GAP_FOR_CONFIDENCE = 0.2;
         HashMap<String, UIElement> uiElementListToReturn = new HashMap<>();
         HashMap<String, Double> matchingUIElementScores = new HashMap<>();
         HashMap<String, UIElement> matchingUIElements = new HashMap<>();
         SimpleTextInterpreter textInterpreter = new SimpleTextInterpreter(MIN_MATCH_PERCENTAGE_FOR_ELEMENT);
+        double bestMatchingScore = 0;
         for (UIElement uiElement: uiElements.values()) {
             //Do fuzzy search
             UIElement.ElementScore matchingElementScore = uiElement.findElementByTextFuzzy(text, textInterpreter, needClickable);
             if (matchingElementScore != null) {
                 matchingUIElementScores.put(matchingElementScore.getElement().id(), matchingElementScore.getScore());
                 matchingUIElements.put(matchingElementScore.getElement().id(), matchingElementScore.getElement());
+                if (matchingElementScore.getScore() > bestMatchingScore) {
+                    bestMatchingScore = matchingElementScore.getScore();
+                }
             }
         }
 
         //Sort the hash map based on match metric
         Map<String, Double> sortedMetricMap = Utils.sortHashMapByValueDescending(matchingUIElementScores);
         for (HashMap.Entry<String, Double> entry : sortedMetricMap.entrySet()) {
-            //TODO: This will not work for nested elements being returned as uiElements.get -- returns null for nested ids
-            //uiElementListToReturn.put(entry.getKey(), uiElements.get(entry.getKey()));
-            uiElementListToReturn.put(entry.getKey(), matchingUIElements.get(entry.getKey()));
+            if (entry.getValue() > bestMatchingScore - MAX_GAP_FOR_CONFIDENCE) {
+                uiElementListToReturn.put(entry.getKey(), matchingUIElements.get(entry.getKey()));
+            }
         }
-        return new ArrayList<UIElement>(uiElementListToReturn.values());
+        return new ArrayList<>(uiElementListToReturn.values());
     }
 
     private List<UIElement> findElementsInScreenStrictNested(String className, String packageName,
@@ -189,9 +249,21 @@ public class UIScreen {
         }
         uiElements = MergeUtils.mergeUIElements(uiElements, uiScreen.getUiElements());
         uiPaths = MergeUtils.mergeUIPaths(uiPaths, uiScreen.getUiPaths());
-        nextStepToScreens = MergeUtils.mergeUITables(nextStepToScreens, uiScreen.getNextStepToScreens());
-        lastStepToCurrentScreen = MergeUtils.mergeUITables(lastStepToCurrentScreen, uiScreen.getLastStepToCurrentScreen());
+        nextStepToScreens = MergeUtils.mergeHops(nextStepToScreens, uiScreen.getNextStepToScreens());
+        lastStepToCurrentScreen = MergeUtils.mergeHops(lastStepToCurrentScreen, uiScreen.getLastStepToCurrentScreen());
+        childScreens = MergeUtils.mergeChildScreens(childScreens, uiScreen.childScreens);
         return true;
+    }
+
+    @Override
+    public String toString() {
+        return "UIScreen{" +
+                "id='" + id + '\'' +
+                ", screenType='" + screenType + '\'' +
+                ", packageName='" + packageName + '\'' +
+                ", title='" + title + '\'' +
+                ", subTitle='" + subTitle + '\'' +
+                '}';
     }
 
     @Override

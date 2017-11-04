@@ -24,9 +24,13 @@ public class NavigationGraphStore {
         if (uiStep == null) {
             return false;
         }
-        screenGraph.addVertex(uiStep.getSrcScreenId());
-        screenGraph.addVertex(uiStep.getDstScreenId());
-        Utils.printDebug("Adding src, dst, uistep: " + uiStep.getSrcScreenId() + ", " +  uiStep.getDstScreenId() + "," + uiStep.toString());
+
+        UIStep currentEdge = screenGraph.getEdge(uiStep.getSrcScreenId(), uiStep.getDstScreenId());
+        if (currentEdge == null || !uiStep.isSoftStep() || currentEdge.isSoftStep()) {
+            screenGraph.addVertex(uiStep.getSrcScreenId());
+            screenGraph.addVertex(uiStep.getDstScreenId());
+            Utils.printDebug("Adding src, dst, uistep: " + uiStep.getSrcScreenId() + ", " +  uiStep.getDstScreenId() + "," + uiStep.toString());
+        }
         return screenGraph.addEdge(uiStep.getSrcScreenId(), uiStep.getDstScreenId(), uiStep);
     }
 

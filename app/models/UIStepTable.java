@@ -10,23 +10,13 @@ public class UIStepTable {
     }
 
     public boolean addStep(String key, UIStep uiStep) {
-        Set<UIStep> uiStepList = uiStepMap.get(key);
-        if (uiStepList == null) {
-            uiStepList = new HashSet<>();
-        }
-        boolean exists = false;
-        for (UIStep stepInList: uiStepList) {
-            if (stepInList.equals(uiStep)) {
-                exists = true;
-                break;
-            }
-        }
-        if (exists) {
-            return false;
-        } else {
+        uiStepMap.putIfAbsent(key, new HashSet<>());
+        Set<UIStep> uiStepList = uiStepMap.get(key) ;
+        if (!uiStepList.contains(uiStep)) {
             uiStepList.add(uiStep);
             return true;
         }
+        return false;
     }
 
     public Set<UIStep> getSteps(String key) {

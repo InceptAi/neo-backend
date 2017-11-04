@@ -10,6 +10,7 @@ import views.RenderingView;
 import javax.annotation.Nullable;
 import java.util.*;
 
+import static views.CrawlingInput.FULL_SCREEN_MODE;
 import static views.CrawlingInput.PARTIAL_SCREEN_MODE;
 
 public class CrawlingInputParser {
@@ -165,6 +166,15 @@ public class CrawlingInputParser {
                             Utils.printDebug("New UI Path: " + screenToBeCreated.getUiPaths().toString());
                             //Add this edge to the graph
                             NavigationGraphStore.getInstance().addNavigationEdgeToGraph(uiStep);
+                            //Add subScreen
+                            if (screenToBeCreated.getScreenType().equalsIgnoreCase(PARTIAL_SCREEN_MODE) &&
+                                    lastScreen.getScreenType().equalsIgnoreCase(FULL_SCREEN_MODE)) {
+                                lastScreen.addChildScreen(screenToBeCreated);
+                                screenToBeCreated.setParentScreenId(lastScreenId);
+                                Utils.printDebug("Adding screen " +
+                                        screenToBeCreated.toString() +
+                                        " as child of " + lastScreen.toString());
+                            }
                         }
                     } else if (uiStep.isWithinSameScreen()) {
                         Utils.printDebug("Within Screen UI Step");
@@ -240,7 +250,6 @@ public class CrawlingInputParser {
         boolean isFuzzySearchNeeded = lastUIEvent.equals(UIEvent.TYPE_WINDOW_STATE_CHANGED) &&
                 lastScreen.getScreenType().equalsIgnoreCase(PARTIAL_SCREEN_MODE);
 
-
         if (lastScreenId.equalsIgnoreCase(currentScreen.getId())) {
             uiStepType = UIStep.UIStepType.WITHIN_SAME_SCREEN;
         } else if (isFuzzySearchNeeded){
@@ -249,13 +258,27 @@ public class CrawlingInputParser {
             uiStepType = UIStep.UIStepType.TO_ANOTHER_SCREEN;
         }
 
-        //TODO: Replaced getText with getOverallText to include contentDescription -- see if it works
-        List<UIElement> matchingElements = lastScreen.findElementsInScreen(
+        HashMap<String, List<UIElement>> matchingScreenAndElementsHashMap = lastScreen.findElementsInScreenHierarchical(
                 lastViewClicked.getClassName(),
                 lastViewClicked.getPackageName(),
                 lastViewClicked.getOverallText(),
                 true,
                 isFuzzySearchNeeded);
+
+        List<UIElement> matchingElements = new ArrayList<>();
+        String screenIdForMatchingElement = Utils.EMPTY_STRING;
+        if (matchingScreenAndElementsHashMap.size() == 1) {
+            screenIdForMatchingElement = (String)matchingScreenAndElementsHashMap.keySet().toArray()[0];
+            matchingElements = matchingScreenAndElementsHashMap.get(screenIdForMatchingElement);
+        }
+
+        //TODO: Replaced getText with getOverallText to include contentDescription -- see if it works
+//        List<UIElement> matchingElements = lastScreen.findElementsInScreen(
+//                lastViewClicked.getClassName(),
+//                lastViewClicked.getPackageName(),
+//                lastViewClicked.getOverallText(),
+//                true,
+//                isFuzzySearchNeeded);
 
         //If more than one, take the top one for now
         // TODO sort the elements based on level of text matching --
@@ -273,7 +296,9 @@ public class CrawlingInputParser {
         }
 
         //Create a UI Step and add to the path
-        return new UIStep(lastScreenId, currentScreen.getId(), lastElement.getId(), lastUIEvent.id(), uiStepType.id());
+        //return new UIStep(lastScreenId, currentScreen.getId(), lastElement.getId(), lastUIEvent.id(), uiStepType.id());
+        return new UIStep(screenIdForMatchingElement, currentScreen.getId(), lastElement.getId(), lastUIEvent.id(), uiStepType.id());
+
     }
 
     public static UIElement createUIElementFromRenderingView(RenderingView renderingView) {

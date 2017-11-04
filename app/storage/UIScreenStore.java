@@ -83,6 +83,16 @@ public class UIScreenStore {
         return new HashSet<>(uiScreenMap.values());
     }
 
+    public Set<UIScreen> getAllScreensWithoutPaths() {
+        HashSet<UIScreen> screenHashSet = new HashSet<>();
+        for (UIScreen uiScreen: uiScreenMap.values()) {
+            if (uiScreen.getUiPaths().size() == 0) {
+                screenHashSet.add(uiScreen);
+            }
+        }
+        return screenHashSet;
+    }
+
     public UIScreen updateScreen(UIScreen uiScreen) {
         String id = uiScreen.getId();
         if (uiScreenMap.containsKey(id)) {

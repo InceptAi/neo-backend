@@ -3,8 +3,9 @@
 # ~~~~
 
 #Crawling controller
-#GET		/		                                    controllers.CrawlController.listScreens()
+#GET		/		                                controllers.CrawlController.listScreens()
 GET		/screens/all		                        controllers.CrawlController.listScreens()
+GET		/screens/pathless		                    controllers.CrawlController.listPathlessScreens()
 GET     /screens/:id	                            controllers.CrawlController.retrieve(id:String)
 POST    /			                                controllers.CrawlController.create()
 PUT		/		                                    controllers.CrawlController.update()

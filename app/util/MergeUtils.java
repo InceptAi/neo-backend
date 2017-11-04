@@ -54,6 +54,22 @@ public class MergeUtils {
         return mergedHashMap;
     }
 
+    public static HashMap<String, UIScreen> mergeChildScreens(HashMap<String, UIScreen> childScreenHashMapOld,
+                                                               HashMap<String, UIScreen> childScreenHashMapUpdated) {
+        HashMap<String, UIScreen> mergedHashMap = new HashMap<>();
+        mergedHashMap.putAll(childScreenHashMapOld);
+        mergedHashMap.putAll(childScreenHashMapUpdated);
+        return mergedHashMap;
+    }
+
+    public static HashMap<String, UIStep> mergeHops(HashMap<String, UIStep> oldHopMap,
+                                                    HashMap<String, UIStep> updatedHopMap) {
+        HashMap<String, UIStep> mergedHashMap = new HashMap<>();
+        mergedHashMap.putAll(oldHopMap);
+        mergedHashMap.putAll(updatedHopMap);
+        return mergedHashMap;
+    }
+
     public static List<UIPath> getUIPathBasedOnLastScreenPath(List<UIPath> lastScreenUIPaths, UIStep uiStep) {
         List<UIPath> uiPathList = new ArrayList<>();
         if (lastScreenUIPaths == null || lastScreenUIPaths.isEmpty()) {
