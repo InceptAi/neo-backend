@@ -86,7 +86,7 @@ public class UIScreenStore {
     public Set<UIScreen> getAllScreensWithoutPaths() {
         HashSet<UIScreen> screenHashSet = new HashSet<>();
         for (UIScreen uiScreen: uiScreenMap.values()) {
-            if (uiScreen.getUiPaths().size() == 0) {
+            if (uiScreen.getLastStepToCurrentScreen().size() == 0) {
                 screenHashSet.add(uiScreen);
             }
         }
@@ -193,6 +193,7 @@ public class UIScreenStore {
         return screenIdsToReturn;
     }
 
+    /*
     private double findBestNavigationStepMetricByKeyWords(String keyWords, UIScreen uiScreen) {
         if (uiScreen == null || keyWords == null) {
             return -1;
@@ -221,4 +222,5 @@ public class UIScreenStore {
         }
         return bestMatchMetric;
     }
+    */
 }

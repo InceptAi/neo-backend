@@ -1,6 +1,7 @@
 package models;
 
 import nlu.SimpleTextInterpreter;
+import nlu.TextInterpreter;
 import util.MergeUtils;
 import util.Utils;
 
@@ -16,7 +17,7 @@ public class UIScreen {
     private String subTitle = Utils.EMPTY_STRING;
     private HashMap<String, UIStep> nextStepToScreens;
     private HashMap<String, UIStep> lastStepToCurrentScreen;
-    private List<UIPath> uiPaths;
+    //private List<UIPath> uiPaths;
     private HashMap<String, UIElement> uiElements;
     private HashMap<String, String> deviceInfo;
     private HashMap<String, UIScreen> childScreens;
@@ -67,7 +68,7 @@ public class UIScreen {
     }
 
     public UIScreen() {
-        this.uiPaths = new ArrayList<>();
+        //this.uiPaths = new ArrayList<>();
         this.uiElements = new HashMap<>();
         this.deviceInfo = new HashMap<>();
         this.nextStepToScreens = new HashMap<>();
@@ -75,13 +76,13 @@ public class UIScreen {
         this.childScreens = new HashMap<>();
     }
 
-    public void setUiPaths(List<UIPath> uiPaths) {
-        this.uiPaths = uiPaths;
-    }
-
-    public void add(UIPath uiPath) {
-        this.uiPaths.add(uiPath);
-    }
+//    public void setUiPaths(List<UIPath> uiPaths) {
+//        this.uiPaths = uiPaths;
+//    }
+//
+//    public void add(UIPath uiPath) {
+//        this.uiPaths.add(uiPath);
+//    }
 
     public void add(UIElement uiElement) {
         this.uiElements.put(uiElement.id(), uiElement);
@@ -107,9 +108,9 @@ public class UIScreen {
         return lastStepToCurrentScreen;
     }
 
-    public List<UIPath> getUiPaths() {
-        return uiPaths;
-    }
+//    public List<UIPath> getUiPaths() {
+//        return uiPaths;
+//    }
 
     public HashMap<String, UIElement> getUiElements() {
         return uiElements;
@@ -139,7 +140,8 @@ public class UIScreen {
                                                                              String packageName,
                                                                              String text,
                                                                              boolean needClickable,
-                                                                             boolean fuzzySearch) {
+                                                                             boolean fuzzySearch,
+                                                                             boolean prioritizeTitleText) {
         //Look in the main screen first
         HashMap<String, List<UIElement>> stringListHashMap = new HashMap<>();
         List<UIElement> uiElementListMainScreen = new ArrayList<>();
@@ -158,12 +160,55 @@ public class UIScreen {
                         packageName,
                         text,
                         needClickable,
-                        true));
+                        true,
+                        false));
             }
         } else {
             stringListHashMap.put(getId(), uiElementListMainScreen);
         }
+        if (prioritizeTitleText) {
+            //Shorten the list based on whether match is for title text view
+            for (String screenId: stringListHashMap.keySet()) {
+                List<UIElement> currentList =  stringListHashMap.get(screenId);
+                if (currentList.size() > 1) {
+                    List<UIElement> prioritizedList = shortenListBasedOnTitleText(text, currentList);
+                    currentList.clear();
+                    currentList.addAll(prioritizedList);
+                }
+            }
+        }
         return stringListHashMap;
+    }
+
+    private List<UIElement> shortenListBasedOnTitleText(String textToMatch,
+                                                        List<UIElement> candidateList) {
+        final double MAX_GAP_IN_MATCHING_METRIC = 0.2;
+        final double MIN_MATCHING_METRIC = 0;
+        SimpleTextInterpreter simpleTextInterpreter = new SimpleTextInterpreter(MIN_MATCHING_METRIC);
+        double bestMatchMetric = 0;
+        HashMap<String, Double> elementScoreHashMap = new HashMap<>();
+        HashMap<String, UIElement> candidateElementHashMap = new HashMap<>();
+        for (UIElement candidateElement : candidateList) {
+            //For each element, find the first TextView with title
+            UIElement titleTextViewElement = UIElement.findFirstTitleTextViewInElement(candidateElement);
+            if (titleTextViewElement != null) {
+                double matchMetric = simpleTextInterpreter.getMatchMetric(textToMatch, titleTextViewElement.getPrimaryText());
+                elementScoreHashMap.put(candidateElement.getId(), matchMetric);
+                candidateElementHashMap.put(candidateElement.getId(), candidateElement);
+                if (matchMetric > bestMatchMetric) {
+                    bestMatchMetric = matchMetric;
+                }
+            }
+        }
+
+        Map<String, Double> sortedElementScoreHashMap = Utils.sortHashMapByValueDescending(elementScoreHashMap);
+        List<UIElement> shortenedList = new ArrayList<>();
+        for (HashMap.Entry<String, Double> entry : sortedElementScoreHashMap.entrySet()) {
+            if (entry.getValue() > 0 && entry.getValue() > bestMatchMetric - MAX_GAP_IN_MATCHING_METRIC) {
+                shortenedList.add(candidateElementHashMap.get(entry.getKey()));
+            }
+        }
+        return shortenedList;
     }
 
     public List<UIElement> findElementsInScreen(String className, String packageName,
@@ -218,6 +263,7 @@ public class UIScreen {
         return new ArrayList<>(uiElementMap.values());
     }
 
+
     public UIElement findTopLevelElementById(String elementId) {
         return uiElements.get(elementId);
     }
@@ -248,7 +294,7 @@ public class UIScreen {
             return false;
         }
         uiElements = MergeUtils.mergeUIElements(uiElements, uiScreen.getUiElements());
-        uiPaths = MergeUtils.mergeUIPaths(uiPaths, uiScreen.getUiPaths());
+        //uiPaths = MergeUtils.mergeUIPaths(uiPaths, uiScreen.getUiPaths());
         nextStepToScreens = MergeUtils.mergeHops(nextStepToScreens, uiScreen.getNextStepToScreens());
         lastStepToCurrentScreen = MergeUtils.mergeHops(lastStepToCurrentScreen, uiScreen.getLastStepToCurrentScreen());
         childScreens = MergeUtils.mergeChildScreens(childScreens, uiScreen.childScreens);

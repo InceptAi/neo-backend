@@ -2,14 +2,18 @@ package models;
 
 import nlu.TextInterpreter;
 import util.Utils;
+import util.ViewUtils;
 
 import java.util.*;
 
 public class UIElement {
+    public static String TITLE_RESOURCE_ID = "android:id/title";
+    public static String SUMMARY_RESOURCE_ID = "android:id/summary";
     private String id = Utils.EMPTY_STRING;
     private String className = Utils.EMPTY_STRING;
     private String packageName = Utils.EMPTY_STRING;
     private String primaryText = Utils.EMPTY_STRING;
+    private String resourceType = Utils.EMPTY_STRING;
     private HashMap<String, UIElement> childElements;
     private List<UIAction> uiActions;
     private HashMap<String, SemanticAction> semanticActions;
@@ -31,6 +35,14 @@ public class UIElement {
         this.primaryText = primaryText;
         this.numToggleableChildren = 0;
         this.isToggleable = isToggleable;
+    }
+
+    public String getResourceType() {
+        return resourceType;
+    }
+
+    public void setResourceType(String resourceType) {
+        this.resourceType = resourceType;
     }
 
     public HashMap<String, SemanticAction> getSemanticActions() {
@@ -91,6 +103,9 @@ public class UIElement {
         childElements = elementHashMap;
     }
 
+    public boolean isTitleTextView() {
+        return className.equalsIgnoreCase(ViewUtils.TEXT_VIEW_CLASS_NAME) && resourceType.equalsIgnoreCase(TITLE_RESOURCE_ID);
+    }
 
     public void add(UIAction uiAction) {
         this.uiActions.add(uiAction);
@@ -286,7 +301,6 @@ public class UIElement {
                 childText.toLowerCase().contains(inputToTest));
     }
 
-
     @Override
     public String toString() {
         return "UIElement{" +
@@ -342,6 +356,24 @@ public class UIElement {
             UIElement matchingParentElement = findFirstParentWithGivenClassNames(elementId, classNames, uiElement);
             if (matchingParentElement != null) {
                 return matchingParentElement;
+            }
+        }
+        return null;
+    }
+
+    public static UIElement findFirstTitleTextViewInElement(UIElement topLevelParent) {
+        if (topLevelParent == null) {
+            return null;
+        }
+
+        if (topLevelParent.isTitleTextView()) {
+            return topLevelParent;
+        }
+
+        for (UIElement uiElement: topLevelParent.getChildElements().values()) {
+            UIElement titleTextViewElement = findFirstTitleTextViewInElement(uiElement);
+            if (titleTextViewElement != null) {
+                return titleTextViewElement;
             }
         }
         return null;

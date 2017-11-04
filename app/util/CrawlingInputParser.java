@@ -148,8 +148,8 @@ public class CrawlingInputParser {
                 if (lastScreen != null) {
                     if (uiStep.isInterScreenStep() || uiStep.isSoftStep()) { //navigational step
                         Utils.printDebug("Navigational UI Step");
-                        List<UIPath> lastScreenUiPaths = lastScreen.getUiPaths();
-                        Utils.printDebug("Last screen paths: " + lastScreenUiPaths.toString());
+                        //List<UIPath> lastScreenUiPaths = lastScreen.getUiPaths();
+                        //Utils.printDebug("Last screen paths: " + lastScreenUiPaths.toString());
                         UIElement lastElement = null;
                         UIScreen.UIElementTuple lastElementTuple = lastScreen.findElementAndTopLevelParentById(uiStep.getUiElementId());
                         if (lastElementTuple != null) {
@@ -162,8 +162,8 @@ public class CrawlingInputParser {
                             Utils.printDebug("Adding uiStep to lastPaths");
                             lastScreen.addUIStepForDestinationScreen(screenToBeCreated.getId(), uiStep);
                             screenToBeCreated.addUIStepToCurrentScreen(uiStep);
-                            screenToBeCreated.setUiPaths(MergeUtils.getUIPathBasedOnLastScreenPath(lastScreenUiPaths, uiStep));
-                            Utils.printDebug("New UI Path: " + screenToBeCreated.getUiPaths().toString());
+                            //screenToBeCreated.setUiPaths(MergeUtils.getUIPathBasedOnLastScreenPath(lastScreenUiPaths, uiStep));
+                            //Utils.printDebug("New UI Path: " + screenToBeCreated.getUiPaths().toString());
                             //Add this edge to the graph
                             NavigationGraphStore.getInstance().addNavigationEdgeToGraph(uiStep);
                             //Add subScreen
@@ -202,6 +202,8 @@ public class CrawlingInputParser {
                                        String lastScreenType,
                                        RenderingView lastViewClicked,
                                        String lastAction) {
+        final boolean PRIORITIZE_ELEMENTS_BASED_ON_TITLE = true;
+
         //Create the last step in UIPath
         //Add navigational action to the last UI Element
         UIStep undefinedUIStep = new UIStep();
@@ -258,12 +260,14 @@ public class CrawlingInputParser {
             uiStepType = UIStep.UIStepType.TO_ANOTHER_SCREEN;
         }
 
-        HashMap<String, List<UIElement>> matchingScreenAndElementsHashMap = lastScreen.findElementsInScreenHierarchical(
+        HashMap<String, List<UIElement>> matchingScreenAndElementsHashMap =
+                lastScreen.findElementsInScreenHierarchical(
                 lastViewClicked.getClassName(),
                 lastViewClicked.getPackageName(),
                 lastViewClicked.getOverallText(),
                 true,
-                isFuzzySearchNeeded);
+                isFuzzySearchNeeded,
+                PRIORITIZE_ELEMENTS_BASED_ON_TITLE);
 
         List<UIElement> matchingElements = new ArrayList<>();
         String screenIdForMatchingElement = Utils.EMPTY_STRING;
@@ -284,11 +288,8 @@ public class CrawlingInputParser {
         // TODO sort the elements based on level of text matching --
         // TODO more matching means higher score so we select the element that matches the most.
         if (matchingElements.size() == 1) {
-            //We are going to be strict here -- if multiple elements match, we don't know what to match
-//        if (!matchingElements.isEmpty()) {
             lastElement = matchingElements.get(0);
         }
-
 
         if (lastElement == null) {
             Utils.printDebug("Error in getLastUIStep: last element is null");
@@ -314,6 +315,9 @@ public class CrawlingInputParser {
         //Add UIActions based on view
         if (renderingView.isClickable() || renderingView.isCheckable()) {
             uiElement.add(UIAction.CLICK);
+        }
+        if (!Utils.nullOrEmpty(renderingView.getViewIdResourceName())) {
+            uiElement.setResourceType(renderingView.getViewIdResourceName());
         }
         return uiElement;
     }
