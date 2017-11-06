@@ -289,8 +289,8 @@ public class UIScreen {
 
 
 
-    public boolean mergeScreen(UIScreen uiScreen) {
-        if (!this.equals(uiScreen)) {
+    public boolean mergeScreen(UIScreen uiScreen, boolean checkEquality) {
+        if (checkEquality && !this.equals(uiScreen)) {
             return false;
         }
         uiElements = MergeUtils.mergeUIElements(uiElements, uiScreen.getUiElements());

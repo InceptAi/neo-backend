@@ -1,5 +1,7 @@
 package views;
 
+import models.UIAction;
+
 public class NavigationIdentifier {
     private ScreenIdentifier srcScreenIdentifier;
     private ScreenIdentifier dstScreenIdentifier;
@@ -8,12 +10,11 @@ public class NavigationIdentifier {
 
     public NavigationIdentifier(ScreenIdentifier srcScreenIdentifier,
                                 ScreenIdentifier dstScreenIdentifier,
-                                ElementIdentifier elementIdentifier,
-                                String uiActionToTake) {
+                                ElementIdentifier elementIdentifier) {
         this.srcScreenIdentifier = srcScreenIdentifier;
         this.dstScreenIdentifier = dstScreenIdentifier;
         this.elementIdentifier = elementIdentifier;
-        this.uiActionToTake = uiActionToTake;
+        this.uiActionToTake = UIAction.CLICK.id();
     }
 
     public ScreenIdentifier getSrcScreenIdentifier() {

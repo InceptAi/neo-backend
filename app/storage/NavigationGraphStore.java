@@ -5,6 +5,7 @@ import org.jgrapht.DirectedGraph;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import util.Utils;
 
+
 public class NavigationGraphStore {
     private static NavigationGraphStore instance;
     private DirectedGraph<String, UIStep> screenGraph;

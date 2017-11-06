@@ -24,7 +24,8 @@ public class CrawlController extends Controller {
         CrawlingInput crawlingInput = Json.fromJson(json, CrawlingInput.class);
         UIScreen screen = CrawlingInputParser.parseCrawlingInput(crawlingInput);
         if (screen != null) {
-            UIScreen createdScreen = UIScreenStore.getInstance().addScreen(screen);
+            //UIScreen createdScreen = UIScreenStore.getInstance().addScreen(screen);
+            UIScreen createdScreen = UIScreenStore.getInstance().addScreenAdvanced(screen);
             JsonNode jsonObject = Json.toJson(createdScreen);
             return created(Utils.createResponse(jsonObject, true));
         } else {

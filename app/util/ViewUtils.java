@@ -100,6 +100,7 @@ public class ViewUtils {
     }
 
     public static String getTextBasedOnClass(String className, String text) {
+        //TODO -- return all text in default cases
         String textToReturn = Utils.EMPTY_STRING;
         switch (className) {
 
@@ -128,6 +129,7 @@ public class ViewUtils {
             case ViewUtils.CHECKED_TEXT_VIEW_CLASS_NAME:
             case ViewUtils.RADIO_BUTTON_CLASS_NAME:
             case ViewUtils.IMAGE_VIEW_CLASS_NAME:
+            case ViewUtils.BUTTON_CLASS_NAME:
                 textToReturn = text;
                 break;
 

@@ -37,10 +37,40 @@ public class UIScreenStore {
             currentScreen = uiScreen;
             uiScreenMap.put(screenId, uiScreen);
         } else {
-            boolean mergeResult = currentScreen.mergeScreen(uiScreen);
+            boolean mergeResult = currentScreen.mergeScreen(uiScreen, true);
             if (!mergeResult) {
                 System.err.print("Screen merge failed for screen getId: " + screenId);
             }
+        }
+        addScreenToPackageMap(uiScreen);
+        addScreenToTitleMap(uiScreen);
+        return currentScreen;
+    }
+
+    public UIScreen addScreenAdvanced(UIScreen uiScreen) {
+        String screenId = uiScreen.getId();
+        UIScreen currentScreen = uiScreenMap.get(screenId);
+        if (currentScreen == null) {
+            currentScreen = uiScreen;
+            uiScreenMap.put(screenId, uiScreen);
+        } else {
+            boolean mergeResult = currentScreen.mergeScreen(uiScreen, true);
+            if (!mergeResult) {
+                System.err.print("Screen merge failed for screen getId: " + screenId);
+            }
+        }
+
+        //Check if a screen exists with same title and empty subtitle -- remove it and merge
+        String screenIdWithEmptySubtitle = UIScreen.getScreenId(
+                uiScreen.getPackageName(),
+                uiScreen.getTitle(),
+                Utils.EMPTY_STRING,
+                uiScreen.getScreenType(),
+                uiScreen.getDeviceInfo().toString());
+        UIScreen emptySubtitleScreen = uiScreenMap.get(screenIdWithEmptySubtitle);
+        if (emptySubtitleScreen != null) {
+            //Remove the empty subtitle screen
+            currentScreen.mergeScreen(emptySubtitleScreen, false);
         }
         addScreenToPackageMap(uiScreen);
         addScreenToTitleMap(uiScreen);

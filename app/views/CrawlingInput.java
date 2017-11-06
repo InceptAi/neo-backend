@@ -137,4 +137,23 @@ public class CrawlingInput {
     public void setDeviceInfo(HashMap<String, String> deviceInfo) {
         this.deviceInfo = deviceInfo;
     }
+
+    @Override
+    public String toString() {
+        return "CrawlingInput{" +
+                "numViews=" + numViews +
+                ", rootSubTitle='" + rootSubTitle + '\'' +
+                ", lastScreenSubTitle='" + lastScreenSubTitle + '\'' +
+                ", currentScreenType='" + currentScreenType + '\'' +
+                ", lastScreenType='" + lastScreenType + '\'' +
+                ", rootHeight=" + rootHeight +
+                ", rootWidth=" + rootWidth +
+                ", rootTitle='" + rootTitle + '\'' +
+                ", lastScreenTitle='" + lastScreenTitle + '\'' +
+                ", lastScreenPackageName='" + lastScreenPackageName + '\'' +
+                ", lastViewClicked=" + lastViewClicked +
+                ", rootPackageName='" + rootPackageName + '\'' +
+                ", lastUIAction='" + lastUIAction + '\'' +
+                '}';
+    }
 }

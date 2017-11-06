@@ -121,7 +121,7 @@ public class Utils {
         Set<String> keywordListToReturn = new HashSet<>();
         List<String> inputWords = Arrays.asList(inputText.split(" "));
         for (String word: inputWords) {
-            if (word.equals(ViewUtils.SWITCH_TEXT) || word.equals(ViewUtils.CHECK_BOX_TEXT)) {
+            if (Utils.nullOrEmpty(word) || word.equals(ViewUtils.SWITCH_TEXT) || word.equals(ViewUtils.CHECK_BOX_TEXT)) {
                 continue; //We don't need to match the switch text specifically -- since we will be matching
                 // other keywords for context
             }
@@ -183,7 +183,11 @@ public class Utils {
         if (nullOrEmpty(input)) {
             return input;
         }
-        return input.replaceAll("[^\\w\\s]","").trim().toLowerCase();
+        //input = input.replaceAll("[^\\w\\s]","").trim().toLowerCase();
+        input = input.replaceAll("[^\\w\\s.@]","").trim().toLowerCase();
+        //Squash multiple consecutive white spaces
+        input = input.replaceAll("\\s+"," ");
+        return input;
     }
 
 }

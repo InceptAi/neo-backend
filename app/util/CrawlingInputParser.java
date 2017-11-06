@@ -14,20 +14,35 @@ import static views.CrawlingInput.FULL_SCREEN_MODE;
 import static views.CrawlingInput.PARTIAL_SCREEN_MODE;
 
 public class CrawlingInputParser {
+    public static final boolean GET_TOP_ELEMENT_IF_MULTIPLE_MATCHES = true;
+    public static final String LOADING_SUBTITLE = "LOADING";
+    public static final String COMPUTING_SUBTITLE = "COMPUTING";
 
-    public static boolean shouldProcess(String lastEventType) {
-        if (lastEventType.equalsIgnoreCase("TYPE_WINDOW_CONTENT_CHANGED")) {
+
+    public static boolean isSubtitlePlaceholderText(String subTitle) {
+        if (Utils.nullOrEmpty(subTitle)) {
+            return false;
+        }
+        return (subTitle.equalsIgnoreCase(LOADING_SUBTITLE) || subTitle.equalsIgnoreCase(COMPUTING_SUBTITLE));
+    }
+
+    public static boolean shouldProcess(CrawlingInput crawlingInput) {
+        if (crawlingInput.getLastUIAction() != null && crawlingInput.getLastUIAction().equalsIgnoreCase("TYPE_WINDOW_CONTENT_CHANGED")) {
+            return false;
+        }
+        if (crawlingInput.getRootPackageName() != null && crawlingInput.getRootPackageName().equalsIgnoreCase("com.android.systemui")) {
             return false;
         }
         return true;
     }
 
     public static UIScreen parseCrawlingInput(CrawlingInput crawlingInput) {
-        if (!shouldProcess(crawlingInput.getLastUIAction())) {
+        if (!shouldProcess(crawlingInput)) {
             return null;
         }
 
         if (Utils.nullOrEmpty(crawlingInput.getRootTitle())) {
+            Utils.printDebug("In parseCrawlingInput, empty root: input = " + crawlingInput.toString());
             return null;
         }
 
@@ -37,8 +52,12 @@ public class CrawlingInputParser {
             Utils.printDebug("In parseCrawlingInput currentTitle: " + crawlingInput.getRootTitle());
         }
         if (crawlingInput.getRootSubTitle() != null) {
-            screenToBeCreated.setSubTitle(crawlingInput.getRootSubTitle());
             Utils.printDebug("In parseCrawlingInput subTitle: " + crawlingInput.getRootSubTitle());
+            if (!isSubtitlePlaceholderText(crawlingInput.getRootSubTitle())) {
+                screenToBeCreated.setSubTitle(crawlingInput.getRootSubTitle());
+            } else {
+                Utils.printDebug("Placeholder subTitle, so ignoring: ");
+            }
         }
 
         if (crawlingInput.getRootPackageName() != null) {
@@ -90,13 +109,6 @@ public class CrawlingInputParser {
 
         for (Long viewId: sortedViewIds) {
             RenderingView renderingView = crawlingInput.getViewMap().get(viewId);
-//            if (renderingView.isParentOfClickableView() &&
-//                    !renderingView.isClickable() && //Comment this line out to get layouts which are not themselves
-//                                                    // clickable but have a clickable child
-//                    renderingView.getOverallText().equals(Utils.EMPTY_STRING)) {
-//                //This view is a parent of clickable views but is not clickable itself. Ignore
-//                continue;
-//            }
             UIElement currentElement = viewIdToUIElementMap.get(renderingView.getFlatViewId());
             //parent info
             RenderingView parentView = crawlingInput.getViewMap().get(renderingView.getParentViewId());
@@ -287,7 +299,8 @@ public class CrawlingInputParser {
         //If more than one, take the top one for now
         // TODO sort the elements based on level of text matching --
         // TODO more matching means higher score so we select the element that matches the most.
-        if (matchingElements.size() == 1) {
+
+        if (matchingElements.size() == 1 || (GET_TOP_ELEMENT_IF_MULTIPLE_MATCHES && matchingElements.size() > 1)) {
             lastElement = matchingElements.get(0);
         }
 
@@ -319,6 +332,11 @@ public class CrawlingInputParser {
         if (!Utils.nullOrEmpty(renderingView.getViewIdResourceName())) {
             uiElement.setResourceType(renderingView.getViewIdResourceName());
         }
+        uiElement.setCoordinates(
+                renderingView.getLeftX(),
+                renderingView.getTopY(),
+                renderingView.getRightX(),
+                renderingView.getBottomY());
         return uiElement;
     }
 

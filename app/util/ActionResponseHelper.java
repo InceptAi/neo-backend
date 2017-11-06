@@ -93,11 +93,6 @@ public class ActionResponseHelper {
                 }
             }
 
-//            ElementIdentifier elementIdentifier = createElementIdentifier(
-//                    uiElementTuple.getUiElement().getClassName(), // TODO : top level element to clickable class name
-//                    uiElementTuple.getUiElement().getPackageName(),
-//                    uiElementTuple.getTopLevelParent().getAllText()); //TODO: UIElement gettext needs to return the text of the parent
-
             ElementIdentifier elementIdentifier = createElementIdentifier(
                     uiElementTuple.getUiElement().getClassName(), // TODO : top level element to clickable class name
                     uiElementTuple.getUiElement().getPackageName(),
@@ -120,7 +115,6 @@ public class ActionResponseHelper {
     }
 
     public static List<NavigationIdentifier> getNavigationPathForClient(UIPath uiPath) {
-        //TODO add the nested element support here too -- just like action identifier
         if (uiPath == null) {
             return null;
         }
@@ -148,8 +142,10 @@ public class ActionResponseHelper {
                     uiElement.getClassName(),
                     uiElement.getPackageName(),
                     uiElement.getAllText()); //
-            NavigationIdentifier navigationIdentifier = new NavigationIdentifier(srcIdentifier, dstIdentifier,
-                    elementIdentifier, uiStep.getUiEventId());
+            NavigationIdentifier navigationIdentifier = new NavigationIdentifier(
+                    srcIdentifier,
+                    dstIdentifier,
+                    elementIdentifier);
             navigationIdentifierList.add(navigationIdentifier);
         }
         return navigationIdentifierList;

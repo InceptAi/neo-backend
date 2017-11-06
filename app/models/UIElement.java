@@ -21,6 +21,10 @@ public class UIElement {
     private List<UIStep> lastStepToGetToThisElement;
     private int numToggleableChildren;
     private boolean isToggleable;
+    private int leftX;
+    private int topY;
+    private int rightX;
+    private int bottomY;
 
     public UIElement() {}
 
@@ -35,6 +39,45 @@ public class UIElement {
         this.primaryText = primaryText;
         this.numToggleableChildren = 0;
         this.isToggleable = isToggleable;
+    }
+
+    public void setCoordinates(int leftX, int topY, int rightX, int bottomY) {
+        this.leftX = leftX;
+        this.topY = topY;
+        this.rightX = rightX;
+        this.bottomY = bottomY;
+    }
+
+    public int getLeftX() {
+        return leftX;
+    }
+
+    public void setLeftX(int leftX) {
+        this.leftX = leftX;
+    }
+
+    public int getTopY() {
+        return topY;
+    }
+
+    public void setTopY(int topY) {
+        this.topY = topY;
+    }
+
+    public int getRightX() {
+        return rightX;
+    }
+
+    public void setRightX(int rightX) {
+        this.rightX = rightX;
+    }
+
+    public int getBottomY() {
+        return bottomY;
+    }
+
+    public void setBottomY(int bottomY) {
+        this.bottomY = bottomY;
     }
 
     public String getResourceType() {

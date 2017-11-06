@@ -9,6 +9,7 @@ import java.util.List;
 
 public class SemanticAction {
     private String screenTitle;
+    private String screenSubTitle;
     private String packageName;
     private String semanticActionDescription;
     private String semanticActionName;
@@ -75,6 +76,7 @@ public class SemanticAction {
         this.uiElementId = uiElement.id();
         this.uiActionId = uiAction.id();
         this.screenTitle = uiScreen.getTitle();
+        this.screenSubTitle = uiScreen.getSubTitle();
         this.packageName = uiScreen.getPackageName();
         this.deviceInfo = uiScreen.getDeviceInfo().toString();
     }
@@ -90,6 +92,7 @@ public class SemanticAction {
         screenTitle = Utils.EMPTY_STRING;
         packageName = Utils.EMPTY_STRING;
         deviceInfo = Utils.EMPTY_STRING;
+        screenSubTitle = Utils.EMPTY_STRING;
     }
 
     /**
@@ -148,6 +151,14 @@ public class SemanticAction {
         return String.valueOf(hashCode());
     }
 
+    public String getScreenSubTitle() {
+        return screenSubTitle;
+    }
+
+    public void setScreenSubTitle(String screenSubTitle) {
+        this.screenSubTitle = screenSubTitle;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -156,6 +167,7 @@ public class SemanticAction {
         SemanticAction that = (SemanticAction) o;
 
         if (!screenTitle.equals(that.screenTitle)) return false;
+        if (!screenSubTitle.equals(that.screenSubTitle)) return false;
         if (!packageName.equals(that.packageName)) return false;
         if (!semanticActionDescription.equals(that.semanticActionDescription)) return false;
         if (!semanticActionName.equals(that.semanticActionName)) return false;
@@ -168,6 +180,7 @@ public class SemanticAction {
     @Override
     public int hashCode() {
         int result = screenTitle.hashCode();
+        result = 31 * result + screenSubTitle.hashCode();
         result = 31 * result + packageName.hashCode();
         result = 31 * result + semanticActionDescription.hashCode();
         result = 31 * result + semanticActionName.hashCode();
@@ -182,6 +195,7 @@ public class SemanticAction {
     public String toString() {
         return "SemanticAction{" +
                 "screenTitle='" + screenTitle + '\'' +
+                "screenSubTitle='" + screenSubTitle + '\'' +
                 ", packageName='" + packageName + '\'' +
                 ", semanticActionDescription='" + semanticActionDescription + '\'' +
                 ", semanticActionName='" + semanticActionName + '\'' +
@@ -219,7 +233,8 @@ public class SemanticAction {
     public List<String> fetchStringsToMatch() {
         List<String> stringList = new ArrayList<>();
         SemanticActionType semanticActionType = SemanticActionType.typeStringToEnum(semanticActionName);
-        String commonString = screenTitle + " "  + semanticActionDescription;
+        String commonString = screenTitle + " "  + screenSubTitle + " " + semanticActionDescription;
+        commonString = commonString.replaceAll("\\s+"," ");
         switch (semanticActionType) {
             case TOGGLE:
                 //Generate text for on/off/enable/disable etc.
