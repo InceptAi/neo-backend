@@ -8,6 +8,7 @@ import services.FirestoreBackend;
 import util.Utils;
 
 import java.util.*;
+import java.util.concurrent.Future;
 
 public class UIScreenStore {
     private static final boolean WRITE_EVERY_SCREEN_TO_BACKEND = true;
@@ -24,6 +25,7 @@ public class UIScreenStore {
         screenTitleToScreenIdMap = new HashMap<>();
         textInterpreter = new SimpleTextInterpreter();
         this.databaseBackend = databaseBackend;
+        //Start fetch of screens from database and update the hashmap here
     }
 
     public static UIScreenStore getInstance() {
@@ -31,6 +33,12 @@ public class UIScreenStore {
             instance = new UIScreenStore(new FirestoreBackend());
         }
         return instance;
+    }
+
+    public Future startLoading() {
+        //databaseBackend.loadScreens(executor, new Runnable(){ update}
+
+        return databaseBackend.loadScreens();
     }
 
     public UIScreen addScreen(UIScreen uiScreen) {
@@ -61,6 +69,15 @@ public class UIScreenStore {
     public void writeAllScreensToBackend() {
         List<UIScreen> screenList = new ArrayList<>(uiScreenMap.values());
         databaseBackend.saveScreens(screenList);
+    }
+
+    public void updateScreenMap(List<UIScreen> uiScreenList) {
+        if (uiScreenList == null) {
+            return;
+        }
+        for (UIScreen uiScreen: uiScreenList) {
+            addScreenAdvanced(uiScreen);
+        }
     }
 
     public UIScreen addScreenAdvanced(UIScreen uiScreen) {

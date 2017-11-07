@@ -3,12 +3,14 @@ package services;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.*;
 import models.UIScreen;
+import tasks.ScreenMapInitializationExecutionContext;
 import util.Utils;
 
 import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 @Singleton
 public class FirestoreBackend implements DatabaseBackend {
@@ -47,11 +49,25 @@ public class FirestoreBackend implements DatabaseBackend {
     }
 
     @Override
+    public Future loadScreens() {
+        return firestoreDatabase.collection(UI_SCREEN_ENDPOINT).get();
+    }
+
+    @Override
     public List<UIScreen> getAllScreens() {
         // asynchronously retrieve all users
         ApiFuture<QuerySnapshot> future = firestoreDatabase.collection(UI_SCREEN_ENDPOINT).get();
         // ...
         // query.get() blocks on response
+
+//        future.addListener(new Runnable() {
+//            @Override
+//            public void run() {
+//
+//            }
+//        }, new ScreenMapInitializationExecutionContext());
+
+
         List<DocumentSnapshot> documentSnapshotList = null;
         try {
             documentSnapshotList = future.get().getDocuments();
