@@ -132,6 +132,10 @@ public class UIScreenStore {
         return new HashSet<>(uiScreenMap.values());
     }
 
+    public Set<UIScreen> getAllScreensFromDatabase() {
+        return new HashSet<>(databaseBackend.getAllScreens());
+    }
+
     public Set<UIScreen> getAllScreensWithoutPaths() {
         HashSet<UIScreen> screenHashSet = new HashSet<>();
         for (UIScreen uiScreen: uiScreenMap.values()) {
