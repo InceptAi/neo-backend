@@ -95,6 +95,20 @@ public class SemanticAction {
         screenSubTitle = Utils.EMPTY_STRING;
     }
 
+    public SemanticAction(String screenTitle, String screenSubTitle, String packageName,
+                          String semanticActionDescription, String semanticActionName,
+                          String uiScreenId, String uiElementId, String uiActionId, String deviceInfo) {
+        this.screenTitle = screenTitle;
+        this.screenSubTitle = screenSubTitle;
+        this.packageName = packageName;
+        this.semanticActionDescription = semanticActionDescription;
+        this.semanticActionName = semanticActionName;
+        this.uiScreenId = uiScreenId;
+        this.uiElementId = uiElementId;
+        this.uiActionId = uiActionId;
+        this.deviceInfo = deviceInfo;
+    }
+
     /**
      * Factory constructor to create an instance
      * @return Instance of SemanticAction or null on error.
@@ -105,7 +119,6 @@ public class SemanticAction {
         }
         return new SemanticAction();
     }
-
 
     public String getSemanticActionName() {
         return semanticActionName;

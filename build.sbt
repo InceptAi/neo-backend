@@ -11,6 +11,10 @@ libraryDependencies += guice
 //JgraphT
 libraryDependencies += "org.jgrapht" % "jgrapht-core" % "1.0.1"
 
+//Firestore
+libraryDependencies += "com.google.cloud" % "google-cloud-firestore" % "0.25.0-beta"
+
+
 // Test Database
 libraryDependencies += "com.h2database" % "h2" % "1.4.194"
 

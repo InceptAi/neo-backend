@@ -48,6 +48,33 @@ public class UIElement {
         this.bottomY = bottomY;
     }
 
+
+    public UIElement(String id, String className, String packageName,
+                     String primaryText, String resourceType,
+                     HashMap<String, UIElement> childElements,
+                     List<UIAction> uiActions, HashMap<String, SemanticAction> semanticActions,
+                     List<NavigationalAction> navigationalActions,
+                     List<UIStep> lastStepToGetToThisElement,
+                     int numToggleableChildren, boolean isToggleable,
+                     int leftX, int topY, int rightX, int bottomY) {
+        this.id = id;
+        this.className = className;
+        this.packageName = packageName;
+        this.primaryText = primaryText;
+        this.resourceType = resourceType;
+        this.childElements = childElements;
+        this.uiActions = uiActions;
+        this.semanticActions = semanticActions;
+        this.navigationalActions = navigationalActions;
+        this.lastStepToGetToThisElement = lastStepToGetToThisElement;
+        this.numToggleableChildren = numToggleableChildren;
+        this.isToggleable = isToggleable;
+        this.leftX = leftX;
+        this.topY = topY;
+        this.rightX = rightX;
+        this.bottomY = bottomY;
+    }
+
     public int getLeftX() {
         return leftX;
     }

@@ -1,31 +1,34 @@
 package storage;
 
-import models.UIPath;
 import models.UIScreen;
-import models.UIStep;
 import nlu.SimpleTextInterpreter;
 import nlu.TextInterpreter;
+import services.DatabaseBackend;
+import services.FirestoreBackend;
 import util.Utils;
 
 import java.util.*;
 
 public class UIScreenStore {
+    private static final boolean WRITE_EVERY_SCREEN_TO_BACKEND = true;
     private static UIScreenStore instance;
     private Map<String, UIScreen> uiScreenMap;
     private Map<String, Set<String>> packageNameToScreenIdMap;
     private Map<String, Set<String>> screenTitleToScreenIdMap;
     private TextInterpreter textInterpreter;
+    private DatabaseBackend databaseBackend;
 
-    private UIScreenStore() {
+    private UIScreenStore(DatabaseBackend databaseBackend) {
         uiScreenMap = new HashMap<>();
         packageNameToScreenIdMap = new HashMap<>();
         screenTitleToScreenIdMap = new HashMap<>();
         textInterpreter = new SimpleTextInterpreter();
+        this.databaseBackend = databaseBackend;
     }
 
     public static UIScreenStore getInstance() {
         if (instance == null) {
-            instance = new UIScreenStore();
+            instance = new UIScreenStore(new FirestoreBackend());
         }
         return instance;
     }
@@ -44,7 +47,20 @@ public class UIScreenStore {
         }
         addScreenToPackageMap(uiScreen);
         addScreenToTitleMap(uiScreen);
+        if (WRITE_EVERY_SCREEN_TO_BACKEND) {
+            writeScreenToBackend(uiScreen);
+        }
         return currentScreen;
+    }
+
+    public void writeScreenToBackend(UIScreen uiScreen) {
+        List<UIScreen> screenList = Arrays.asList(uiScreen);
+        databaseBackend.saveScreens(screenList);
+    }
+
+    public void writeAllScreensToBackend() {
+        List<UIScreen> screenList = new ArrayList<>(uiScreenMap.values());
+        databaseBackend.saveScreens(screenList);
     }
 
     public UIScreen addScreenAdvanced(UIScreen uiScreen) {
@@ -74,6 +90,9 @@ public class UIScreenStore {
         }
         addScreenToPackageMap(uiScreen);
         addScreenToTitleMap(uiScreen);
+        if (WRITE_EVERY_SCREEN_TO_BACKEND) {
+            writeScreenToBackend(uiScreen);
+        }
         return currentScreen;
     }
 

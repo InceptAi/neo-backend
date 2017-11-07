@@ -22,6 +22,11 @@ public class UIScreen {
     private HashMap<String, String> deviceInfo;
     private HashMap<String, UIScreen> childScreens;
 
+
+    public HashMap<String, UIScreen> getChildScreens() {
+        return childScreens;
+    }
+
     public String getParentScreenId() {
         return parentScreenId;
     }
@@ -68,7 +73,6 @@ public class UIScreen {
     }
 
     public UIScreen() {
-        //this.uiPaths = new ArrayList<>();
         this.uiElements = new HashMap<>();
         this.deviceInfo = new HashMap<>();
         this.nextStepToScreens = new HashMap<>();
@@ -76,13 +80,23 @@ public class UIScreen {
         this.childScreens = new HashMap<>();
     }
 
-//    public void setUiPaths(List<UIPath> uiPaths) {
-//        this.uiPaths = uiPaths;
-//    }
-//
-//    public void add(UIPath uiPath) {
-//        this.uiPaths.add(uiPath);
-//    }
+    public UIScreen(String id, String parentScreenId, String screenType, String packageName,
+                    String title, String subTitle, HashMap<String, UIStep> nextStepToScreens,
+                    HashMap<String, UIStep> lastStepToCurrentScreen, HashMap<String, UIElement> uiElements,
+                    HashMap<String, String> deviceInfo, HashMap<String, UIScreen> childScreens) {
+        this.id = id;
+        this.parentScreenId = parentScreenId;
+        this.screenType = screenType;
+        this.packageName = packageName;
+        this.title = title;
+        this.subTitle = subTitle;
+        this.nextStepToScreens = nextStepToScreens;
+        this.lastStepToCurrentScreen = lastStepToCurrentScreen;
+        this.uiElements = uiElements;
+        this.deviceInfo = deviceInfo;
+        this.childScreens = childScreens;
+    }
+
 
     public void add(UIElement uiElement) {
         this.uiElements.put(uiElement.id(), uiElement);

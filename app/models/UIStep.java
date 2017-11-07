@@ -53,6 +53,7 @@ public class UIStep {
         this.uiStepTypeId = uiStep.uiStepTypeId;
     }
 
+
     //Factory constructor
     public static UIStep copyStep(UIStep uiStep) {
         if (uiStep == null) {
@@ -60,6 +61,7 @@ public class UIStep {
         }
         return  new UIStep(uiStep);
     }
+
 
     public String getDstScreenId() {
         return dstScreenId;
