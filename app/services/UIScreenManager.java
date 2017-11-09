@@ -21,6 +21,7 @@ public class UIScreenManager {
     private DatabaseBackend databaseBackend;
     private NavigationGraphStore navigationGraphStore;
     private SemanticActionStore semanticActionStore;
+    private List<UIScreen> uiScreensToDelete;
 
     @Inject
     public UIScreenManager(DatabaseBackend databaseBackend,
@@ -33,6 +34,7 @@ public class UIScreenManager {
         this.databaseBackend = databaseBackend;
         this.navigationGraphStore = navigationGraphStore;
         this.semanticActionStore = semanticActionStore;
+        this.uiScreensToDelete = new ArrayList<>();
         //Start fetch of screens from database and update the hash map here
         startLoading();
     }
@@ -49,9 +51,10 @@ public class UIScreenManager {
         databaseBackend.saveScreensAsync(screenList);
     }
 
-    public void writeAllScreensToBackendAsync() {
+    public void commitScreensToBackendAsync() {
         List<UIScreen> screenList = new ArrayList<>(uiScreenMap.values());
         databaseBackend.saveScreensAsync(screenList);
+        databaseBackend.deleteScreensAsync(uiScreensToDelete);
     }
 
     private void updateScreenMap(List<UIScreen> uiScreenList) {
@@ -65,7 +68,7 @@ public class UIScreenManager {
 
     public UIScreen addScreenAdvanced(UIScreen uiScreen) {
         String screenId = uiScreen.getId();
-        UIScreen screenInMap = uiScreenMap.get(screenId);
+            UIScreen screenInMap = uiScreenMap.get(screenId);
         if (screenInMap == null) {
             screenInMap = uiScreen;
             uiScreenMap.put(screenId, uiScreen);
@@ -88,6 +91,7 @@ public class UIScreenManager {
             //Remove the empty subtitle screen
             screenInMap.mergeScreen(emptySubtitleScreen, false);
             uiScreenMap.remove(emptySubtitleScreen.getId());
+            uiScreensToDelete.add(emptySubtitleScreen);
         }
         addScreenToPackageMap(screenInMap);
         addScreenToTitleMap(screenInMap);

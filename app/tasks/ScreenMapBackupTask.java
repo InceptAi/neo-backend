@@ -44,7 +44,7 @@ public class ScreenMapBackupTask {
                 Duration.create(INTERVAL_FOR_BACKING_UP_SCREEN_MAP_MINUTES, TimeUnit.MINUTES), // interval
                 () -> {
                     System.out.println("Running screen backup");
-                    uiScreenManager.writeAllScreensToBackendAsync();
+                    uiScreenManager.commitScreensToBackendAsync();
                 },
                 //() -> System.out.println("Running block of code"),
                 this.executor // using the custom executor

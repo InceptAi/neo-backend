@@ -23,6 +23,7 @@ public class UIScreen {
     private HashMap<String, UIElement> uiElements = new HashMap<>();
     private HashMap<String, UIScreen> childScreens = new HashMap<>();
     private HashMap<String, SemanticAction> semanticActions = new HashMap<>();
+    private long lastUpdatedAtMs = 0;
 
     public HashMap<String, UIScreen> getChildScreens() {
         return childScreens;
@@ -58,6 +59,14 @@ public class UIScreen {
         return id;
     }
 
+    public long getLastUpdatedAtMs() {
+        return lastUpdatedAtMs;
+    }
+
+    public void setLastUpdatedAtMs(long lastUpdatedAtMs) {
+        this.lastUpdatedAtMs = lastUpdatedAtMs;
+    }
+
     public UIScreen() {
         this.id = Utils.EMPTY_STRING;
         this.screenType = Utils.EMPTY_STRING;
@@ -65,13 +74,14 @@ public class UIScreen {
         this.title = Utils.EMPTY_STRING;
         this.subTitle = Utils.EMPTY_STRING;
         this.deviceInfo = new HashMap<>();
+        this.lastUpdatedAtMs = 0;
     }
 
     public UIScreen(String id, String parentScreenId, String screenType, String packageName,
                     String title, String subTitle, HashMap<String, UIStep> nextStepToScreens,
                     HashMap<String, UIStep> lastStepToCurrentScreen, HashMap<String, UIElement> uiElements,
                     HashMap<String, String> deviceInfo, HashMap<String, UIScreen> childScreens,
-                    HashMap<String, SemanticAction> semanticActions) {
+                    HashMap<String, SemanticAction> semanticActions, long lastUpdatedAtMs) {
         this.parentScreenId = parentScreenId;
         this.screenType = screenType;
         this.packageName = packageName;
@@ -84,6 +94,7 @@ public class UIScreen {
         this.childScreens = childScreens;
         this.semanticActions = semanticActions;
         this.id = getScreenId(packageName, title, subTitle, screenType, deviceInfo.toString());
+        this.lastUpdatedAtMs = lastUpdatedAtMs;
     }
 
     public UIScreen(String title, String subTitle, String packageName, String screenType, HashMap<String, String> deviceInfo) {
@@ -93,6 +104,7 @@ public class UIScreen {
         this.subTitle = subTitle;
         this.deviceInfo = deviceInfo;
         this.id = getScreenId(packageName, title, subTitle, screenType, deviceInfo.toString());
+        this.lastUpdatedAtMs = System.currentTimeMillis();
         //Other initializations
         this.uiElements = new HashMap<>();
         this.nextStepToScreens = new HashMap<>();
@@ -317,6 +329,7 @@ public class UIScreen {
         nextStepToScreens = MergeUtils.mergeHops(nextStepToScreens, uiScreen.getNextStepToScreens());
         lastStepToCurrentScreen = MergeUtils.mergeHops(lastStepToCurrentScreen, uiScreen.getLastStepToCurrentScreen());
         childScreens = MergeUtils.mergeChildScreens(childScreens, uiScreen.childScreens);
+        lastUpdatedAtMs = lastUpdatedAtMs > uiScreen.getLastUpdatedAtMs() ? lastUpdatedAtMs : uiScreen.getLastUpdatedAtMs();
         return true;
     }
 

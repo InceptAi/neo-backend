@@ -136,4 +136,26 @@ public class FirestoreBackend implements DatabaseBackend {
         }
         batch.commit();
     }
+
+    @Override
+    public void deleteScreensAsync(List<UIScreen> uiScreenList) {
+        if (uiScreenList == null || uiScreenList.isEmpty()) {
+            return;
+        }
+        // Get a new write batch
+        WriteBatch batch = firestoreDatabase.batch();
+        for (UIScreen uiScreen : uiScreenList) {
+            String screenId = uiScreen.getId();
+            DocumentReference docRef = firestoreDatabase.collection(UI_SCREEN_ENDPOINT).document(screenId);
+            batch.delete(docRef);
+            // asynchronously commit the batch
+            //ApiFuture<List<WriteResult>> future = batch.commit();
+            // ...
+            // future.get() blocks on batch commit operation
+            //for (WriteResult result :future.get()) {
+            //    System.out.println("Update time : " + result.getUpdateTime());
+            //}
+        }
+        batch.commit();
+    }
 }
