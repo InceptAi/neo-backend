@@ -1,5 +1,6 @@
 package views;
 
+@SuppressWarnings("unused")
 public class ActionRequest {
     private String requestText;
 

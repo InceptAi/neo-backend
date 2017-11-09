@@ -2,6 +2,7 @@ package views;
 
 import models.UIAction;
 
+@SuppressWarnings("unused")
 public class NavigationIdentifier {
     private ScreenIdentifier srcScreenIdentifier;
     private ScreenIdentifier dstScreenIdentifier;

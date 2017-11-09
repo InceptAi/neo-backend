@@ -7,8 +7,8 @@ import play.libs.Json;
 import java.util.*;
 
 public class Utils {
-    public static String EMPTY_STRING = "";
-    public static String PRINT_MODE = "DEBUG";
+    public static final String EMPTY_STRING = "";
+    private static final String PRINT_MODE = "DEBUG";
 
     public static ObjectNode createResponse(Object response, boolean ok) {
         ObjectNode result = Json.newObject();
@@ -35,7 +35,7 @@ public class Utils {
         return target == null || target.isEmpty() || target.equals("null");
     }
 
-    public static List<String> splitSentenceToWords(String sentence) {
+    private static List<String> splitSentenceToWords(String sentence) {
         if (nullOrEmpty(sentence)) {
             return new ArrayList<>();
         }
@@ -99,19 +99,6 @@ public class Utils {
         return replacedSentenceBuilder.toString().trim().toLowerCase();
     }
 
-    //
-//    public static List<String> generateKeywordsForFindingElement(String inputText) {
-//        if (nullOrEmpty(inputText)) {
-//            return new ArrayList<>();
-//        }
-//        List<String> list = new ArrayList<>();
-//        //TODO: We should send down regex for matching text
-//        list.add(replaceWord(inputText, ViewUtils.getMapForOnOffTemplateReplacement("on")));
-//        list.add(replaceWord(inputText, ViewUtils.getMapForOnOffTemplateReplacement("off")));
-//        //TODO: handle check box, seek bar and other stuff
-//        //TODO: remove duplicates from the final string -- make sure each element in the list has no duplicates
-//        return list;
-//    }
 
     public static List<String> generateKeywordsForFindingElement(String inputText) {
         if (nullOrEmpty(inputText)) {
@@ -162,15 +149,12 @@ public class Utils {
         return toReturn.toString().trim().toLowerCase();
     }
 
+    @SuppressWarnings("Java8ListSort")
     public static <K, V extends Comparable<? super V>> Map<K, V>
     sortHashMapByValueDescending(Map<K, V> map) {
         List<Map.Entry<K, V>> list =
                 new LinkedList<Map.Entry<K, V>>(map.entrySet());
-        Collections.sort(list, new Comparator<Map.Entry<K, V>>() {
-            public int compare(Map.Entry<K, V> o1, Map.Entry<K, V> o2) {
-                return (o2.getValue()).compareTo(o1.getValue());
-            }
-        });
+        Collections.sort(list, (o1, o2) -> (o2.getValue()).compareTo(o1.getValue()));
 
         Map<K, V> result = new LinkedHashMap<K, V>();
         for (Map.Entry<K, V> entry : list) {
@@ -189,5 +173,4 @@ public class Utils {
         input = input.replaceAll("\\s+"," ");
         return input;
     }
-
 }

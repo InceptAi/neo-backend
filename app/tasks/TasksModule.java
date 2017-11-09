@@ -6,6 +6,6 @@ public class TasksModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        bind(DatabaseLoader.class).asEagerSingleton();
+        bind(ScreenMapBackupTask.class).asEagerSingleton();
     }
 }

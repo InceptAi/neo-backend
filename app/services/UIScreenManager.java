@@ -1,77 +1,60 @@
-package storage;
+package services;
 
 import models.UIScreen;
 import nlu.SimpleTextInterpreter;
 import nlu.TextInterpreter;
-import services.DatabaseBackend;
-import services.FirestoreBackend;
+import storage.NavigationGraphStore;
+import storage.SemanticActionStore;
+import util.ResultFunction;
 import util.Utils;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.*;
-import java.util.concurrent.Future;
 
-public class UIScreenStore {
-    private static final boolean WRITE_EVERY_SCREEN_TO_BACKEND = true;
-    private static UIScreenStore instance;
+@Singleton
+public class UIScreenManager {
     private Map<String, UIScreen> uiScreenMap;
     private Map<String, Set<String>> packageNameToScreenIdMap;
     private Map<String, Set<String>> screenTitleToScreenIdMap;
     private TextInterpreter textInterpreter;
     private DatabaseBackend databaseBackend;
+    private NavigationGraphStore navigationGraphStore;
+    private SemanticActionStore semanticActionStore;
 
-    private UIScreenStore(DatabaseBackend databaseBackend) {
+    @Inject
+    public UIScreenManager(DatabaseBackend databaseBackend,
+                           NavigationGraphStore navigationGraphStore,
+                           SemanticActionStore semanticActionStore) {
         uiScreenMap = new HashMap<>();
         packageNameToScreenIdMap = new HashMap<>();
         screenTitleToScreenIdMap = new HashMap<>();
         textInterpreter = new SimpleTextInterpreter();
         this.databaseBackend = databaseBackend;
-        //Start fetch of screens from database and update the hashmap here
+        this.navigationGraphStore = navigationGraphStore;
+        this.semanticActionStore = semanticActionStore;
+        //Start fetch of screens from database and update the hash map here
+        startLoading();
     }
 
-    public static UIScreenStore getInstance() {
-        if (instance == null) {
-            instance = new UIScreenStore(new FirestoreBackend());
-        }
-        return instance;
-    }
-
-    public Future startLoading() {
-        //databaseBackend.loadScreens(executor, new Runnable(){ update}
-
-        return databaseBackend.loadScreens();
-    }
-
-    public UIScreen addScreen(UIScreen uiScreen) {
-        String screenId = uiScreen.getId();
-        UIScreen currentScreen = uiScreenMap.get(screenId);
-        if (currentScreen == null) {
-            currentScreen = uiScreen;
-            uiScreenMap.put(screenId, uiScreen);
-        } else {
-            boolean mergeResult = currentScreen.mergeScreen(uiScreen, true);
-            if (!mergeResult) {
-                System.err.print("Screen merge failed for screen getId: " + screenId);
-            }
-        }
-        addScreenToPackageMap(uiScreen);
-        addScreenToTitleMap(uiScreen);
-        if (WRITE_EVERY_SCREEN_TO_BACKEND) {
-            writeScreenToBackend(uiScreen);
-        }
-        return currentScreen;
+    private void startLoading() {
+        databaseBackend.loadAllScreens((ResultFunction<List<UIScreen>>) uiScreenList -> {
+            UIScreenManager.this.updateScreenMap(uiScreenList);
+            return null;
+        });
     }
 
     public void writeScreenToBackend(UIScreen uiScreen) {
-        List<UIScreen> screenList = Arrays.asList(uiScreen);
-        databaseBackend.saveScreens(screenList);
+        List<UIScreen> screenList = Collections.singletonList(uiScreen);
+        databaseBackend.saveScreensAsync(screenList);
     }
 
-    public void writeAllScreensToBackend() {
+    public void writeAllScreensToBackendAsync() {
         List<UIScreen> screenList = new ArrayList<>(uiScreenMap.values());
-        databaseBackend.saveScreens(screenList);
+        databaseBackend.saveScreensAsync(screenList);
     }
 
-    public void updateScreenMap(List<UIScreen> uiScreenList) {
+    private void updateScreenMap(List<UIScreen> uiScreenList) {
         if (uiScreenList == null) {
             return;
         }
@@ -82,12 +65,12 @@ public class UIScreenStore {
 
     public UIScreen addScreenAdvanced(UIScreen uiScreen) {
         String screenId = uiScreen.getId();
-        UIScreen currentScreen = uiScreenMap.get(screenId);
-        if (currentScreen == null) {
-            currentScreen = uiScreen;
+        UIScreen screenInMap = uiScreenMap.get(screenId);
+        if (screenInMap == null) {
+            screenInMap = uiScreen;
             uiScreenMap.put(screenId, uiScreen);
         } else {
-            boolean mergeResult = currentScreen.mergeScreen(uiScreen, true);
+            boolean mergeResult = screenInMap.mergeScreen(uiScreen, true);
             if (!mergeResult) {
                 System.err.print("Screen merge failed for screen getId: " + screenId);
             }
@@ -103,15 +86,16 @@ public class UIScreenStore {
         UIScreen emptySubtitleScreen = uiScreenMap.get(screenIdWithEmptySubtitle);
         if (emptySubtitleScreen != null) {
             //Remove the empty subtitle screen
-            currentScreen.mergeScreen(emptySubtitleScreen, false);
+            screenInMap.mergeScreen(emptySubtitleScreen, false);
+            uiScreenMap.remove(emptySubtitleScreen.getId());
         }
-        addScreenToPackageMap(uiScreen);
-        addScreenToTitleMap(uiScreen);
-        if (WRITE_EVERY_SCREEN_TO_BACKEND) {
-            writeScreenToBackend(uiScreen);
-        }
-        return currentScreen;
+        addScreenToPackageMap(screenInMap);
+        addScreenToTitleMap(screenInMap);
+        navigationGraphStore.updateNavigationGraph(screenInMap);
+        semanticActionStore.updateSemanticActionStore(screenInMap);
+        return screenInMap;
     }
+
 
     public UIScreen getScreen(String packageName, String title, String subTitle, String screenType, String deviceInfo) {
         if (Utils.nullOrEmpty(deviceInfo)) {
@@ -262,35 +246,4 @@ public class UIScreenStore {
 
         return screenIdsToReturn;
     }
-
-    /*
-    private double findBestNavigationStepMetricByKeyWords(String keyWords, UIScreen uiScreen) {
-        if (uiScreen == null || keyWords == null) {
-            return -1;
-        }
-        double bestMatchMetric = 0;
-        for (UIPath uiPath: uiScreen.getUiPaths()) {
-            UIStep lastStep = uiPath.getLastStepInPath();
-            if (lastStep == null || lastStep.getUiElementId() == null) {
-                continue;
-            }
-            UIScreen srcScreen = uiScreenMap.get(lastStep.getSrcScreenId());
-            if (srcScreen == null || srcScreen.getUiElements() == null) {
-                //SrcScreen can't be null
-                Utils.printDebug("We should never come here");
-            }
-            UIScreen.UIElementTuple lastUIElementTuple = srcScreen.findElementAndTopLevelParentById(lastStep.getUiElementId());
-            //UIElement lastUIElement = srcScreen.getUiElements().get(lastStep.getUiElementId());
-            if (lastUIElementTuple == null || lastUIElementTuple.getUiElement() != null) {
-                Utils.printDebug("We should never come here");
-            }
-            assert lastUIElementTuple != null && lastUIElementTuple.getUiElement() != null;
-            double matchMetric = textInterpreter.getMatchMetric(keyWords, lastUIElementTuple.getUiElement().getAllText());
-            if (matchMetric > bestMatchMetric) {
-                bestMatchMetric = matchMetric;
-            }
-        }
-        return bestMatchMetric;
-    }
-    */
 }

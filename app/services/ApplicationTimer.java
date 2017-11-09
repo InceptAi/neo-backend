@@ -21,6 +21,7 @@ import play.inject.ApplicationLifecycle;
  * This class needs to run code when the server stops. It uses the
  * application's {@link ApplicationLifecycle} to register a stop hook.
  */
+@SuppressWarnings("FieldCanBeLocal")
 @Singleton
 public class ApplicationTimer {
 

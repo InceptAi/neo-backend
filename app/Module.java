@@ -1,9 +1,13 @@
 import com.google.inject.AbstractModule;
 import java.time.Clock;
 
-import services.ApplicationTimer;
-import services.AtomicCounter;
-import services.Counter;
+import graph.PathFinder;
+import graph.ShortestPathFinder;
+import services.*;
+import storage.NavigationGraphStore;
+import storage.SemanticActionStore;
+import services.UIScreenManager;
+import util.Utils;
 
 /**
  * This class is a Guice module that tells Guice how to bind several
@@ -26,6 +30,13 @@ public class Module extends AbstractModule {
         bind(ApplicationTimer.class).asEagerSingleton();
         // Set AtomicCounter as the implementation for Counter.
         bind(Counter.class).to(AtomicCounter.class);
+        bind(DatabaseBackend.class).to(FirestoreBackend.class);
+        bind(PathFinder.class).to(ShortestPathFinder.class);
+        bind(UIScreenManager.class).asEagerSingleton();
+        bind(SemanticActionStore.class).asEagerSingleton();
+        bind(NavigationGraphStore.class).asEagerSingleton();
+        //initialize neo stuff
+        Utils.printDebug("In Configure of module");
+        bind(NeoLifecycle.class).asEagerSingleton();
     }
-
 }

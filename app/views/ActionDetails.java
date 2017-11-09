@@ -4,6 +4,7 @@ package views;
 import javax.annotation.Nullable;
 import java.util.List;
 
+@SuppressWarnings("unused")
 public class ActionDetails {
     private Condition successCondition;
     private List<NavigationIdentifier> navigationIdentifierList;

@@ -5,62 +5,9 @@ import util.Utils;
 
 import java.util.*;
 
-public class NavigationTable {
-    public static final int MAX_PATHS_FOR_DESTINATION = 3;
-
-    private class SrcDestTuple {
-        private String srcId = Utils.EMPTY_STRING;
-        private String destId = Utils.EMPTY_STRING;
-
-        public SrcDestTuple(String srcId, String destId) {
-            this.srcId = srcId;
-            this.destId = destId;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof SrcDestTuple)) return false;
-
-            SrcDestTuple that = (SrcDestTuple) o;
-
-            if (!srcId.equals(that.srcId)) return false;
-            return destId.equals(that.destId);
-        }
-
-        @Override
-        public int hashCode() {
-            int result = srcId.hashCode();
-            result = 31 * result + destId.hashCode();
-            return result;
-        }
-    }
-
-
-    private class NavigationTableEntry {
-
-        private MinMaxPriorityQueue<UIPath> uiPathQueue;
-
-        public NavigationTableEntry() {
-            uiPathQueue = MinMaxPriorityQueue.orderedBy(new UIPath.UIPathComparator())
-                    .maximumSize(MAX_PATHS_FOR_DESTINATION)
-                    .create();
-        }
-
-        public boolean addPath(UIPath uiPath) {
-            return uiPathQueue.add(uiPath);
-        }
-
-        public UIPath getShortestPath() {
-            return uiPathQueue.peekFirst();
-        }
-
-        public List<UIPath> getAllPaths() {
-            return Arrays.asList((UIPath [])uiPathQueue.toArray());
-        }
-    }
-
-    HashMap<SrcDestTuple, NavigationTableEntry> uiPaths;
+class NavigationTable {
+    private static final int MAX_PATHS_FOR_DESTINATION = 3;
+    private HashMap<SrcDestTuple, NavigationTableEntry> uiPaths;
 
     public NavigationTable() {
         uiPaths = new HashMap<>();
@@ -91,5 +38,59 @@ public class NavigationTable {
     public int length() {
         return uiPaths.size();
     }
+
+    private class NavigationTableEntry {
+
+        private MinMaxPriorityQueue<UIPath> uiPathQueue;
+
+        NavigationTableEntry() {
+            uiPathQueue = MinMaxPriorityQueue.orderedBy(new UIPath.UIPathComparator())
+                    .maximumSize(MAX_PATHS_FOR_DESTINATION)
+                    .create();
+        }
+
+        boolean addPath(UIPath uiPath) {
+            return uiPathQueue.add(uiPath);
+        }
+
+        UIPath getShortestPath() {
+            return uiPathQueue.peekFirst();
+        }
+
+        public List<UIPath> getAllPaths() {
+            return Arrays.asList((UIPath [])uiPathQueue.toArray());
+        }
+    }
+
+    @SuppressWarnings("SimplifiableIfStatement")
+    private class SrcDestTuple {
+        private String srcId = Utils.EMPTY_STRING;
+        private String destId = Utils.EMPTY_STRING;
+
+        SrcDestTuple(String srcId, String destId) {
+            this.srcId = srcId;
+            this.destId = destId;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof SrcDestTuple)) return false;
+
+            SrcDestTuple that = (SrcDestTuple) o;
+
+            //noinspection SimplifiableIfStatement
+            if (!srcId.equals(that.srcId)) return false;
+            return destId.equals(that.destId);
+        }
+
+        @Override
+        public int hashCode() {
+            int result = srcId.hashCode();
+            result = 31 * result + destId.hashCode();
+            return result;
+        }
+    }
+
 
 }

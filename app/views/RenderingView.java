@@ -2,11 +2,8 @@ package views;
 
 import util.Utils;
 
-import java.util.ArrayList;
-import java.util.List;
-
+@SuppressWarnings("unused")
 public class RenderingView {
-    private static String NULL_TEXT = "null";
     private long parentViewId;
     private long flatViewId;
     private String packageName;
@@ -235,6 +232,7 @@ public class RenderingView {
 
     public String getOverallText() {
         String textToReturn = Utils.EMPTY_STRING;
+        String NULL_TEXT = "null";
         if (!text.equals(NULL_TEXT)) {
             textToReturn = text;
         } else if (!contentDescription.equals(NULL_TEXT)) {

@@ -1,12 +1,12 @@
 package models;
 
-public class DeviceInfo {
-    private String manufacturer;
-    private String model;
-    private String release;
-    private String sdk;
-    private String hardware;
-    private String product;
+class DeviceInfo {
+    private final String manufacturer;
+    private final String model;
+    private final String release;
+    private final String sdk;
+    private final String hardware;
+    private final String product;
 
     public DeviceInfo(String manufacturer, String model, String release,
                       String sdk, String hardware, String product) {

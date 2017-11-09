@@ -2,30 +2,36 @@ package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import util.CrawlingInputParser;
+import services.UIScreenManager;
+import util.UIScreenParser;
 import views.CrawlingInput;
-import models.SemanticAction;
 import models.UIScreen;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
-import storage.SemanticActionStore;
-import storage.UIScreenStore;
 import util.Utils;
 
+import javax.inject.Inject;
 import java.util.Set;
 
+@SuppressWarnings("unused")
 public class CrawlController extends Controller {
+    @Inject
+    private UIScreenManager uiScreenManager;
+    @Inject
+    private UIScreenParser uiScreenParser;
+
     public Result create() {
         JsonNode json = request().body().asJson();
         if (json == null) {
             return badRequest(Utils.createResponse("Expecting Json data", false));
         }
         CrawlingInput crawlingInput = Json.fromJson(json, CrawlingInput.class);
-        UIScreen screen = CrawlingInputParser.parseCrawlingInput(crawlingInput);
+
+        UIScreen screen = uiScreenParser.parseToUIScreen(crawlingInput);
+
         if (screen != null) {
-            //UIScreen createdScreen = UIScreenStore.getInstance().addScreen(screen);
-            UIScreen createdScreen = UIScreenStore.getInstance().addScreenAdvanced(screen);
+            UIScreen createdScreen = uiScreenManager.addScreenAdvanced(screen);
             JsonNode jsonObject = Json.toJson(createdScreen);
             return created(Utils.createResponse(jsonObject, true));
         } else {
@@ -39,8 +45,8 @@ public class CrawlController extends Controller {
             return badRequest(Utils.createResponse("Expecting Json data", false));
         }
         CrawlingInput crawlingInput = Json.fromJson(json, CrawlingInput.class);
-        UIScreen screen = CrawlingInputParser.parseCrawlingInput(crawlingInput);
-        UIScreen updatedScreen = UIScreenStore.getInstance().updateScreen(screen);
+        UIScreen screen = uiScreenParser.parseToUIScreen(crawlingInput);
+        UIScreen updatedScreen = uiScreenManager.updateScreen(screen);
         if (updatedScreen == null) {
             return notFound(Utils.createResponse("Screen not found", false));
         }
@@ -49,38 +55,31 @@ public class CrawlController extends Controller {
     }
 
     public Result retrieve(String title) {
-        if (UIScreenStore.getInstance().getScreen(title) == null) {
+        if (uiScreenManager.getScreen(title) == null) {
             return notFound(Utils.createResponse("Screen with title:" + title + " not found", false));
         }
-        JsonNode jsonObjects = Json.toJson(UIScreenStore.getInstance().getScreen(title));
+        JsonNode jsonObjects = Json.toJson(uiScreenManager.getScreen(title));
         return ok(Utils.createResponse(jsonObjects, true));
     }
 
     public Result listScreens() {
-        Set<UIScreen> result = UIScreenStore.getInstance().getAllScreens();
+        Set<UIScreen> result = uiScreenManager.getAllScreens();
         ObjectMapper mapper = new ObjectMapper();
         JsonNode jsonData = mapper.convertValue(result, JsonNode.class);
         return ok(Utils.createResponse(jsonData, true));
     }
 
     public Result listDatabaseScreens() {
-        Set<UIScreen> result = UIScreenStore.getInstance().getAllScreensFromDatabase();
+        Set<UIScreen> result = uiScreenManager.getAllScreensFromDatabase();
         ObjectMapper mapper = new ObjectMapper();
         JsonNode jsonData = mapper.convertValue(result, JsonNode.class);
         return ok(Utils.createResponse(jsonData, true));
     }
 
     public Result listPathlessScreens() {
-        Set<UIScreen> result = UIScreenStore.getInstance().getAllScreensWithoutPaths();
+        Set<UIScreen> result = uiScreenManager.getAllScreensWithoutPaths();
         ObjectMapper mapper = new ObjectMapper();
         JsonNode jsonData = mapper.convertValue(result, JsonNode.class);
         return ok(Utils.createResponse(jsonData, true));
     }
-
-//    public Result delete(String packageName, String title, String deviceInfo) {
-//        if (!UIScreenStore.getInstance().deleteScreen(UIScreen.getScreenId(packageName, title, deviceInfo))) {
-//            return notFound(Utils.createResponse("Screen with title:" + title + " not found", false));
-//        }
-//        return ok(Utils.createResponse("Screen with getId:" + title + " deleted", true));
-//    }
 }

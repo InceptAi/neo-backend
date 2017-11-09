@@ -22,38 +22,42 @@ public class ViewUtils {
     public static final String TOGGLE_BUTTON_CLASS_NAME = "android.widget.ToggleButton";
 
 
-
+    @SuppressWarnings("unused")
     private static final String VIEWPAGER_CLASS = "ViewPager";
     private static final String NULL_STRING = "null";
 
     //On/off
-    public  static String ON_TEXT = "on";
-    public static String OFF_TEXT = "off";
+    static final String ON_TEXT = "on";
+    static final String OFF_TEXT = "off";
 
     //Texts
-    public static String SWITCH_TEXT = "SWITCH_ON_OFF";
-    public static String ON_OFF_TEXT = "TEXT_ON_OFF";
-    public static String CHECK_BOX_TEXT = "CHECK_BOX_ON_OFF";
-    public static String SEEK_BAR_TEXT = "SEEK_BAR_VALUE";
-    public static String EDIT_TEXT_VIEW_TEXT = "EDIT_TEXT_VIEW_TEXT";
-    public static final String MULTIPLE_WORD_MATCH_DELIMITER = "#";
+    public static final String SWITCH_TEXT = "SWITCH_ON_OFF";
+    public static final String ON_OFF_TEXT = "TEXT_ON_OFF";
+    public static final String CHECK_BOX_TEXT = "CHECK_BOX_ON_OFF";
+    public static final String SEEK_BAR_TEXT = "SEEK_BAR_VALUE";
+    public static final String EDIT_TEXT_VIEW_TEXT = "EDIT_TEXT_VIEW_TEXT";
+    private static final String MULTIPLE_WORD_MATCH_DELIMITER = "#";
     public static final String ON_OFF_KEYWORD_REPLACEMENT = ON_TEXT + MULTIPLE_WORD_MATCH_DELIMITER + OFF_TEXT;
 
+    @SuppressWarnings("unused")
     public static final HashMap<String , String> ON_MAP = new HashMap<String , String>() {{
         put(ViewUtils.SWITCH_TEXT,    "on");
         put(ViewUtils.ON_OFF_TEXT, "on");
     }};
 
+    @SuppressWarnings("unused")
     public static final HashMap<String , String> OFF_MAP = new HashMap<String , String>() {{
         put(ViewUtils.SWITCH_TEXT,    "off");
         put(ViewUtils.ON_OFF_TEXT, "off");
     }};
 
+    @SuppressWarnings("unused")
     public static final HashMap<String , String> ENABLE_MAP = new HashMap<String , String>() {{
         put(ViewUtils.SWITCH_TEXT,    "enable");
         put(ViewUtils.ON_OFF_TEXT, "enable");
     }};
 
+    @SuppressWarnings("unused")
     public static final HashMap<String , String> DISABLE_MAP = new HashMap<String , String>() {{
         put(ViewUtils.SWITCH_TEXT,    "disable");
         put(ViewUtils.ON_OFF_TEXT, "disable");
@@ -74,7 +78,7 @@ public class ViewUtils {
         }};
     }
 
-    public static boolean isTextView(RenderingView renderingView) {
+    private static boolean isTextView(RenderingView renderingView) {
         return TEXT_VIEW_CLASS_NAME.equals(renderingView.getClassName());
     }
 
@@ -166,7 +170,6 @@ public class ViewUtils {
     }
 
     public static String getTitleFromView(HashMap<Long, RenderingView> renderingViewHashMap) {
-        long topTextViewId = 0;
         long topTextViewYCoordinate = Long.MAX_VALUE;
         long topTextViewXCoordinate = Long.MAX_VALUE;
         String titleToReturn = Utils.EMPTY_STRING;
@@ -177,7 +180,6 @@ public class ViewUtils {
                     (renderingView.getTopY() == topTextViewYCoordinate && renderingView.getLeftX() < topTextViewXCoordinate)) {
                 topTextViewYCoordinate = renderingView.getTopY();
                 topTextViewXCoordinate = renderingView.getLeftX();
-                topTextViewId = renderingView.getFlatViewId();
                 titleToReturn = renderingView.getText();
             }
         }

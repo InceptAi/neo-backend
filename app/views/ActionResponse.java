@@ -1,11 +1,9 @@
 package views;
 
-import models.UIPath;
-import models.UIStep;
-
 import java.util.ArrayList;
 import java.util.List;
 
+@SuppressWarnings("unused")
 public class ActionResponse {
 
     private List<ActionDetails> actionList;

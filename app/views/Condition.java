@@ -1,5 +1,6 @@
 package views;
 
+@SuppressWarnings("unused")
 public class Condition {
     private String textToMatch;
     private int minValue = 0;

@@ -9,13 +9,22 @@ import org.jgrapht.GraphPath;
 import org.jgrapht.alg.shortestpath.DijkstraShortestPath;
 import storage.NavigationGraphStore;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.List;
 
-public class ShortestPathFinder extends PathFinder {
+@Singleton
+public class ShortestPathFinder implements PathFinder {
+    private NavigationGraphStore navigationGraphStore;
+
+    @Inject
+    public ShortestPathFinder(NavigationGraphStore navigationGraphStore) {
+        this.navigationGraphStore = navigationGraphStore;
+    }
 
     @Override
     public UIPath findPathBetweenScreens(UIScreen srcScreen, UIScreen dstScreen) {
-        DirectedGraph<String, UIStep> screenGraph = NavigationGraphStore.getInstance().getScreenGraph();
+        DirectedGraph<String, UIStep> screenGraph = navigationGraphStore.getScreenGraph();
         GraphPath<String, UIStep> shortestPath =
                 DijkstraShortestPath.findPathBetween(screenGraph, srcScreen.getId(), dstScreen.getId());
         if (shortestPath == null) {

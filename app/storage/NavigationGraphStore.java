@@ -1,38 +1,48 @@
 package storage;
 
+import models.UIScreen;
 import models.UIStep;
 import org.jgrapht.DirectedGraph;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import util.Utils;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import java.util.HashMap;
 
+@Singleton
 public class NavigationGraphStore {
-    private static NavigationGraphStore instance;
     private DirectedGraph<String, UIStep> screenGraph;
 
-    private NavigationGraphStore() {
+    @Inject
+    public NavigationGraphStore()
+    {
         screenGraph = new DefaultDirectedGraph<String, UIStep>(UIStep.class);
     }
 
-    public static NavigationGraphStore getInstance() {
-        if (instance == null) {
-            instance = new NavigationGraphStore();
-        }
-        return instance;
-    }
-
-    public boolean addNavigationEdgeToGraph(UIStep uiStep) {
+    private boolean addNavigationEdgeToGraph(UIStep uiStep) {
         if (uiStep == null) {
             return false;
         }
 
         UIStep currentEdge = screenGraph.getEdge(uiStep.getSrcScreenId(), uiStep.getDstScreenId());
-        if (currentEdge == null || !uiStep.isSoftStep() || currentEdge.isSoftStep()) {
+        if (currentEdge == null || !uiStep.checkIfSoftStep() || currentEdge.checkIfSoftStep()) {
             screenGraph.addVertex(uiStep.getSrcScreenId());
             screenGraph.addVertex(uiStep.getDstScreenId());
-            Utils.printDebug("Adding src, dst, uistep: " + uiStep.getSrcScreenId() + ", " +  uiStep.getDstScreenId() + "," + uiStep.toString());
+            Utils.printDebug("Adding src, dst, ui step: " + uiStep.getSrcScreenId() + ", " +  uiStep.getDstScreenId() + "," + uiStep.toString());
         }
         return screenGraph.addEdge(uiStep.getSrcScreenId(), uiStep.getDstScreenId(), uiStep);
+    }
+
+
+    public void updateNavigationGraph(UIScreen uiScreen) {
+        if (uiScreen == null) {
+            return;
+        }
+        HashMap<String, UIStep> nextSteps = uiScreen.getNextStepToScreens();
+        for (UIStep uiStep: nextSteps.values()) {
+            addNavigationEdgeToGraph(uiStep);
+        }
     }
 
     public DirectedGraph<String, UIStep> getScreenGraph() {

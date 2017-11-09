@@ -8,34 +8,43 @@ import java.util.Arrays;
 import java.util.List;
 
 public class SemanticAction {
+    public static final String UNDEFINED = "UNDEFINED";
+    public static final String TOGGLE = "TOGGLE";
+    public static final String SEEK = "SEEK";
+    @SuppressWarnings("unused")
+    public static final String EDIT_TEXT = "EDIT_TEXT";
+    @SuppressWarnings("unused")
+    public static final String SUBMIT = "SUBMIT";
+    @SuppressWarnings("unused")
+    public static final String SELECT = "SELECT";
+    public static final String NAVIGATE = "NAVIGATE";
+
     private String screenTitle;
     private String screenSubTitle;
     private String packageName;
     private String semanticActionDescription;
-    private String semanticActionName;
+    private String semanticActionType;
     private String uiScreenId;
     private String uiElementId;
     private String uiActionId;
     private String deviceInfo;
 
     private SemanticAction(UIScreen uiScreen, UIElement uiElement, UIElement parentElement, UIAction uiAction) {
-        //Utils.printDebug("In semantic action create, uiElement: " + uiElement.toString() + " parentElement: " + parentElement);
-        //Utils.printDebug("Adding semantic action with className:" + className + " elementText:" + elementText);
-        String actionDescription = uiElement.getAllText();
-        String actionName = SemanticActionType.UNDEFINED.id();
+        String actionDescription = uiElement.fetchAllText();
+        String actionType = SemanticAction.UNDEFINED;
         switch (uiElement.getClassName()) {
             case ViewUtils.SWITCH_CLASS_NAME:
             case ViewUtils.CHECK_BOX_CLASS_NAME:
             case ViewUtils.TOGGLE_BUTTON_CLASS_NAME:
                 if (parentElement != null) {
-                    if (!parentElement.isClickable()) {
-                        //Parent element is not clickable need to add actionName and text here
-                        actionName = SemanticActionType.TOGGLE.id();
-                        actionDescription = parentElement.getAllText();
+                    if (!parentElement.checkIsClickable()) {
+                        //Parent element is not clickable need to add actionType and text here
+                        actionType = SemanticAction.TOGGLE;
+                        actionDescription = parentElement.fetchAllText();
                     }
                 } else {
-                    actionName = SemanticActionType.TOGGLE.id();
-                    actionDescription = uiScreen.getTitle() + " " + uiElement.getAllText(); //Not sure if this will work
+                    actionType = SemanticAction.TOGGLE;
+                    actionDescription = uiScreen.getTitle() + " " + uiElement.fetchAllText(); //Not sure if this will work
                 }
                 break;
             case ViewUtils.LINEAR_LAYOUT_CLASS_NAME:
@@ -44,7 +53,7 @@ public class SemanticAction {
                 //We have a ll, rl, or fl which is clickable
                 //Check if element has a child switch/checkbox -- assign toggle
                 if (uiElement.getNumToggleableChildren() == 1) {
-                    actionName = SemanticActionType.TOGGLE.id();
+                    actionType = SemanticAction.TOGGLE;
                 }
 //              else if (uiElement.getNumToggleableChildren() > 1){
 //                    //Not sure how to handle this -- leave it undefined
@@ -52,26 +61,27 @@ public class SemanticAction {
                 break;
             case ViewUtils.CHECKED_TEXT_VIEW_CLASS_NAME:
             case ViewUtils.RADIO_BUTTON_CLASS_NAME:
-                actionName = SemanticActionType.TOGGLE.id();
+                actionType = SemanticAction.TOGGLE;
                 break;
 //            case ViewUtils.SWITCH_CLASS_NAME:
 //            case ViewUtils.CHECK_BOX_CLASS_NAME:
 //                actionDescription = ViewUtils.isTemplateText(elementText) ? screenTitle : elementText;
-//                actionName = SemanticActionType.TOGGLE.getId();
 //                break;
             case ViewUtils.SEEK_BAR_CLASS_NAME:
-                actionName = SemanticActionType.SEEK.id();
+                actionType = SemanticAction.SEEK;
                 break;
             case ViewUtils.BUTTON_CLASS_NAME:
             case ViewUtils.IMAGE_BUTTON_CLASS_NAME:
+            case ViewUtils.IMAGE_VIEW_CLASS_NAME:
+            case ViewUtils.EDIT_TEXT_VIEW_CLASS_NAME:
                 //TODO validate this
-                actionName = uiElement.getAllText();
+                actionType = uiElement.fetchAllText();
                 break;
             default:
                 break;
         }
         this.semanticActionDescription = actionDescription;
-        this.semanticActionName = actionName;
+        this.semanticActionType = actionType;
         this.uiScreenId = uiScreen.getId();
         this.uiElementId = uiElement.id();
         this.uiActionId = uiAction.id();
@@ -82,10 +92,10 @@ public class SemanticAction {
     }
 
 
-    public SemanticAction() {
+    private SemanticAction() {
         screenTitle = Utils.EMPTY_STRING;
-        semanticActionDescription = SemanticActionType.UNDEFINED.id();
-        semanticActionName = Utils.EMPTY_STRING;
+        semanticActionDescription = SemanticAction.UNDEFINED;
+        semanticActionType = Utils.EMPTY_STRING;
         uiScreenId = Utils.EMPTY_STRING;
         uiElementId = Utils.EMPTY_STRING;
         uiActionId = Utils.EMPTY_STRING;
@@ -96,13 +106,13 @@ public class SemanticAction {
     }
 
     public SemanticAction(String screenTitle, String screenSubTitle, String packageName,
-                          String semanticActionDescription, String semanticActionName,
+                          String semanticActionDescription, String semanticActionType,
                           String uiScreenId, String uiElementId, String uiActionId, String deviceInfo) {
         this.screenTitle = screenTitle;
         this.screenSubTitle = screenSubTitle;
         this.packageName = packageName;
         this.semanticActionDescription = semanticActionDescription;
-        this.semanticActionName = semanticActionName;
+        this.semanticActionType = semanticActionType;
         this.uiScreenId = uiScreenId;
         this.uiElementId = uiElementId;
         this.uiActionId = uiActionId;
@@ -120,12 +130,13 @@ public class SemanticAction {
         return new SemanticAction();
     }
 
-    public String getSemanticActionName() {
-        return semanticActionName;
+
+    public String getSemanticActionType() {
+        return semanticActionType;
     }
 
-    public void setSemanticActionName(String semanticActionName) {
-        this.semanticActionName = semanticActionName;
+    public void setSemanticActionType(String semanticActionType) {
+        this.semanticActionType = semanticActionType;
     }
 
     public void setUiActionId(String uiActionId) {
@@ -160,7 +171,7 @@ public class SemanticAction {
         return semanticActionDescription;
     }
 
-    public String getId() {
+    public String fetchSemanticActionId() {
         return String.valueOf(hashCode());
     }
 
@@ -183,7 +194,7 @@ public class SemanticAction {
         if (!screenSubTitle.equals(that.screenSubTitle)) return false;
         if (!packageName.equals(that.packageName)) return false;
         if (!semanticActionDescription.equals(that.semanticActionDescription)) return false;
-        if (!semanticActionName.equals(that.semanticActionName)) return false;
+        if (!semanticActionType.equals(that.semanticActionType)) return false;
         if (!uiScreenId.equals(that.uiScreenId)) return false;
         if (!uiElementId.equals(that.uiElementId)) return false;
         if (!deviceInfo.equals(that.deviceInfo)) return false;
@@ -196,7 +207,7 @@ public class SemanticAction {
         result = 31 * result + screenSubTitle.hashCode();
         result = 31 * result + packageName.hashCode();
         result = 31 * result + semanticActionDescription.hashCode();
-        result = 31 * result + semanticActionName.hashCode();
+        result = 31 * result + semanticActionType.hashCode();
         result = 31 * result + uiScreenId.hashCode();
         result = 31 * result + uiElementId.hashCode();
         result = 31 * result + uiActionId.hashCode();
@@ -211,7 +222,7 @@ public class SemanticAction {
                 "screenSubTitle='" + screenSubTitle + '\'' +
                 ", packageName='" + packageName + '\'' +
                 ", semanticActionDescription='" + semanticActionDescription + '\'' +
-                ", semanticActionName='" + semanticActionName + '\'' +
+                ", semanticActionType='" + semanticActionType + '\'' +
                 ", uiScreenId='" + uiScreenId + '\'' +
                 ", uiElementId='" + uiElementId + '\'' +
                 ", uiActionId='" + uiActionId + '\'' +
@@ -245,7 +256,6 @@ public class SemanticAction {
 
     public List<String> fetchStringsToMatch() {
         List<String> stringList = new ArrayList<>();
-        SemanticActionType semanticActionType = SemanticActionType.typeStringToEnum(semanticActionName);
         String commonString = screenTitle + " "  + screenSubTitle + " " + semanticActionDescription;
         commonString = commonString.replaceAll("\\s+"," ");
         switch (semanticActionType) {
@@ -263,7 +273,7 @@ public class SemanticAction {
     }
 
 
-    public static boolean isUndefined(SemanticAction semanticAction) {
-        return semanticAction.getSemanticActionName().equalsIgnoreCase(SemanticActionType.UNDEFINED.id());
+    public static boolean checkIfSemanticActionIsDefined(SemanticAction semanticAction) {
+        return !semanticAction.getSemanticActionType().equalsIgnoreCase(SemanticAction.UNDEFINED);
     }
 }

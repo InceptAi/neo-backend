@@ -1,23 +1,39 @@
 package services;
 
+import akka.actor.ActorSystem;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.*;
 import models.UIScreen;
-import tasks.ScreenMapInitializationExecutionContext;
+import play.libs.concurrent.CustomExecutionContext;
 import util.Utils;
 
+import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
+import java.util.function.Function;
 
+@SuppressWarnings("unused")
 @Singleton
 public class FirestoreBackend implements DatabaseBackend {
     private static final String FIREBASE_PROJECT_ID = "neobackend";
     private static final String UI_SCREEN_ENDPOINT = "uiscreens";
 
     private Firestore firestoreDatabase;
+
+    @Inject
+    private FirestoreExecutionContext executionContext;
+
+    private static class FirestoreExecutionContext extends CustomExecutionContext {
+
+        @Inject
+        public FirestoreExecutionContext(ActorSystem actorSystem) {
+            super(actorSystem, "load-from-database-dispatcher");
+        }
+    }
+
+    @Inject
     public FirestoreBackend() {
         FirestoreOptions firestoreOptions = FirestoreOptions.getDefaultInstance().toBuilder()
                         .setProjectId(FIREBASE_PROJECT_ID)
@@ -49,25 +65,36 @@ public class FirestoreBackend implements DatabaseBackend {
     }
 
     @Override
-    public Future loadScreens() {
-        return firestoreDatabase.collection(UI_SCREEN_ENDPOINT).get();
+    public <U> void loadAllScreens(Function<List<UIScreen>, U> function) {
+        ApiFuture<QuerySnapshot> future = firestoreDatabase.collection(UI_SCREEN_ENDPOINT).get();
+        future.addListener(() -> {
+            try {
+                function.apply(parse(future.get().getDocuments()));
+            } catch (Exception e) {
+                // log error.
+                e.printStackTrace();
+                Utils.printDebug(e.toString());
+            }
+        }, executionContext);
+    }
+
+    private static List<UIScreen> parse(List<DocumentSnapshot> documentSnapshotList) {
+        if (documentSnapshotList == null) {
+            return new ArrayList<>();
+        }
+
+        List<UIScreen> uiScreenList = new ArrayList<>();
+        for (DocumentSnapshot document : documentSnapshotList) {
+            UIScreen uiScreen = document.toObject(UIScreen.class);
+            Utils.printDebug(document.getId() + " => " + uiScreen);
+            uiScreenList.add(uiScreen);
+        }
+        return uiScreenList;
     }
 
     @Override
     public List<UIScreen> getAllScreens() {
-        // asynchronously retrieve all users
         ApiFuture<QuerySnapshot> future = firestoreDatabase.collection(UI_SCREEN_ENDPOINT).get();
-        // ...
-        // query.get() blocks on response
-
-//        future.addListener(new Runnable() {
-//            @Override
-//            public void run() {
-//
-//            }
-//        }, new ScreenMapInitializationExecutionContext());
-
-
         List<DocumentSnapshot> documentSnapshotList = null;
         try {
             documentSnapshotList = future.get().getDocuments();
@@ -89,28 +116,24 @@ public class FirestoreBackend implements DatabaseBackend {
     }
 
     @Override
-    public List<UIScreen> getAllScreensForDevice(String deviceInfo) {
-        return null;
-    }
-
-    @Override
-    public List<UIScreen> getAllScreensForPackage(String packageName) {
-        return null;
-    }
-
-    @Override
-    public void saveScreens(List<UIScreen> uiScreenList) {
-        for (UIScreen uiScreen: uiScreenList) {
+    public void saveScreensAsync(List<UIScreen> uiScreenList) {
+        if (uiScreenList == null || uiScreenList.isEmpty()) {
+            return;
+        }
+        // Get a new write batch
+        WriteBatch batch = firestoreDatabase.batch();
+        for (UIScreen uiScreen : uiScreenList) {
             String screenId = uiScreen.getId();
             DocumentReference docRef = firestoreDatabase.collection(UI_SCREEN_ENDPOINT).document(screenId);
-            //asynchronously write data
-            ApiFuture<WriteResult> result = docRef.set(uiScreen);
-            // result.get() blocks on response
-            try {
-                System.out.println("Update time : " + result.get().getUpdateTime());
-            } catch (InterruptedException|ExecutionException e) {
-                Utils.printDebug("Exception in reading back screen data");
-            }
+            batch.set(docRef, uiScreen);
+            // asynchronously commit the batch
+            //ApiFuture<List<WriteResult>> future = batch.commit();
+            // ...
+            // future.get() blocks on batch commit operation
+            //for (WriteResult result :future.get()) {
+            //    System.out.println("Update time : " + result.getUpdateTime());
+            //}
         }
+        batch.commit();
     }
 }

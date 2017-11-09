@@ -4,23 +4,16 @@ import models.*;
 import nlu.TextInterpreter;
 import util.Utils;
 
+import javax.inject.Singleton;
 import java.util.*;
 
+@Singleton
 public class SemanticActionStore {
-    private static SemanticActionStore instance;
     private Map<String, SemanticAction> semanticActionMap = new HashMap<>();
 
-    public static SemanticActionStore getInstance() {
-        if (instance == null) {
-            instance = new SemanticActionStore();
-        }
-        return instance;
-    }
-
-    public SemanticAction addSemanticAction(SemanticAction semanticAction) {
-        String key = semanticAction.getId();
+    private void addSemanticAction(SemanticAction semanticAction) {
+        String key = semanticAction.fetchSemanticActionId();
         semanticActionMap.put(key, semanticAction);
-        return semanticAction;
     }
 
     public SemanticAction getAction(String id) {
@@ -39,7 +32,7 @@ public class SemanticActionStore {
         HashMap<String, SemanticActionMatchingTextAndScore> hashMapToReturn = new HashMap<>();
         for (SemanticAction semanticAction : semanticActionMap.values()) {
             hashMapToReturn.put(
-                    semanticAction.getId(),
+                    semanticAction.fetchSemanticActionId(),
                     new SemanticActionMatchingTextAndScore(semanticAction.getSemanticActionDescription(), 0));
         }
         return hashMapToReturn;
@@ -67,8 +60,8 @@ public class SemanticActionStore {
                 }
             }
             if (bestMatchMetric > 0) {
-                semanticActionIdToBestMatchingString.put(semanticAction.getId(), bestMatchingString);
-                semanticActionIdToMatchMetric.put(semanticAction.getId(), bestMatchMetric);
+                semanticActionIdToBestMatchingString.put(semanticAction.fetchSemanticActionId(), bestMatchingString);
+                semanticActionIdToMatchMetric.put(semanticAction.fetchSemanticActionId(), bestMatchMetric);
             }
         }
 
@@ -111,6 +104,16 @@ public class SemanticActionStore {
 
         public void setConfidenceScore(double confidenceScore) {
             this.confidenceScore = confidenceScore;
+        }
+    }
+
+    public void updateSemanticActionStore(UIScreen uiScreen) {
+        //Iterate through all the ui elements and add semantic actions for clickable ones
+        if (uiScreen == null) {
+            return;
+        }
+        for (SemanticAction semanticAction: uiScreen.getSemanticActions().values()) {
+            addSemanticAction(semanticAction);
         }
     }
 

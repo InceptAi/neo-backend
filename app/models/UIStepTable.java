@@ -3,7 +3,7 @@ package models;
 import java.util.*;
 
 public class UIStepTable {
-    HashMap<String, Set<UIStep>> uiStepMap;
+    private HashMap<String, Set<UIStep>> uiStepMap;
 
     public UIStepTable() {
         uiStepMap = new HashMap<>();

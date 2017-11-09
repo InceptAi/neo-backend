@@ -7,7 +7,7 @@ import util.ViewUtils;
 import java.util.*;
 
 public class UIElement {
-    public static String TITLE_RESOURCE_ID = "android:id/title";
+    private static final String TITLE_RESOURCE_ID = "android:id/title";
     public static String SUMMARY_RESOURCE_ID = "android:id/summary";
     private String id = Utils.EMPTY_STRING;
     private String className = Utils.EMPTY_STRING;
@@ -52,7 +52,8 @@ public class UIElement {
     public UIElement(String id, String className, String packageName,
                      String primaryText, String resourceType,
                      HashMap<String, UIElement> childElements,
-                     List<UIAction> uiActions, HashMap<String, SemanticAction> semanticActions,
+                     List<UIAction> uiActions,
+                     HashMap<String, SemanticAction> semanticActions,
                      List<NavigationalAction> navigationalActions,
                      List<UIStep> lastStepToGetToThisElement,
                      int numToggleableChildren, boolean isToggleable,
@@ -73,6 +74,10 @@ public class UIElement {
         this.topY = topY;
         this.rightX = rightX;
         this.bottomY = bottomY;
+    }
+
+    public void setToggleable(boolean toggleable) {
+        isToggleable = toggleable;
     }
 
     public int getLeftX() {
@@ -119,7 +124,7 @@ public class UIElement {
         return semanticActions;
     }
 
-    public boolean isToggleable() {
+    private boolean isToggleable() {
         return isToggleable;
     }
 
@@ -173,7 +178,7 @@ public class UIElement {
         childElements = elementHashMap;
     }
 
-    public boolean isTitleTextView() {
+    private boolean checkIfTitleTextView() {
         return className.equalsIgnoreCase(ViewUtils.TEXT_VIEW_CLASS_NAME) && resourceType.equalsIgnoreCase(TITLE_RESOURCE_ID);
     }
 
@@ -245,20 +250,20 @@ public class UIElement {
         this.navigationalActions = navigationalActions;
     }
 
-    public boolean isClickable() {
+    public boolean checkIsClickable() {
         return uiActions.contains(UIAction.CLICK);
     }
 
     public ElementScore findElementByTextFuzzy(String textToFind, TextInterpreter textInterpreter, boolean needClickable) {
-        double matchMetric = textInterpreter.getMatchMetric(textToFind, getAllText());
+        double matchMetric = textInterpreter.getMatchMetric(textToFind, fetchAllText());
 
         if (matchMetric == 0) {
             return null;
         }
 
-        Utils.printDebug("In findElementByTextFuzzy, metric: " + matchMetric + " text: " + textToFind + " eleText: " + getAllText());
+        Utils.printDebug("In findElementByTextFuzzy, metric: " + matchMetric + " text: " + textToFind + " eleText: " + fetchAllText());
         //Match is > 0 and is clickable if needed
-        if (isClickable() || !needClickable) {
+        if (checkIsClickable() || !needClickable) {
             Utils.printDebug("In findElementByTextFuzzy, found clickable match");
             return new ElementScore(this, matchMetric);
         }
@@ -266,7 +271,6 @@ public class UIElement {
         //Find a clickable child with non zero score
         double bestScore = 0;
         ElementScore bestElementScore = null;
-        HashMap<String, Double> childScores = new HashMap<>();
         for (UIElement uiElement: childElements.values()) {
             ElementScore childElementScore = uiElement.findElementByTextFuzzy(textToFind, textInterpreter, needClickable);
             if (childElementScore != null && childElementScore.getScore() > bestScore) {
@@ -286,7 +290,7 @@ public class UIElement {
 
         HashMap<String, UIElement> stringUIElementHashMap = new HashMap<>();
 
-        if (!needClickable || isClickable() &&
+        if (!needClickable || checkIsClickable() &&
                 this.className.equalsIgnoreCase(className) &&
                 this.packageName.equalsIgnoreCase(packageName)) {
             Utils.printDebug("In findElementsByTextStrict, found match for element: " + this.toString());
@@ -341,7 +345,19 @@ public class UIElement {
         return result;
     }
 
-    public String getChildText() {
+    public String fetchAllText() {
+        String toReturn = Utils.EMPTY_STRING;
+        String childText = fetchChildText();
+        if (!Utils.nullOrEmpty(primaryText)) {
+            toReturn = toReturn + primaryText;
+        }
+        if (!Utils.nullOrEmpty(childText)) {
+            toReturn = toReturn + " " + childText;
+        }
+        return toReturn.trim();
+    }
+
+    private String fetchChildText() {
         StringBuilder childTextBuilder = new StringBuilder();
         if (childElements != null && !childElements.isEmpty()) {
             for (UIElement uiElement : childElements.values()) {
@@ -352,21 +368,9 @@ public class UIElement {
         return childTextBuilder.toString().trim();
     }
 
-    public String getAllText() {
-        String toReturn = Utils.EMPTY_STRING;
-        String childText = getChildText();
-        if (!Utils.nullOrEmpty(primaryText)) {
-            toReturn = toReturn + primaryText;
-        }
-        if (!Utils.nullOrEmpty(childText)) {
-            toReturn = toReturn + " " + childText;
-        }
-        return toReturn.trim();
-    }
-
-    boolean isMatchForText(String inputText) {
+    private boolean isMatchForText(String inputText) {
         String inputToTest = inputText.toLowerCase();
-        String childText = getChildText();
+        String childText = fetchChildText();
         return (primaryText.toLowerCase().contains(inputToTest) ||
                 childText.toLowerCase().contains(inputToTest));
     }
@@ -390,7 +394,7 @@ public class UIElement {
         private UIElement element;
         private double score;
 
-        public ElementScore(UIElement element, double score) {
+        ElementScore(UIElement element, double score) {
             this.element = element;
             this.score = score;
         }
@@ -436,7 +440,7 @@ public class UIElement {
             return null;
         }
 
-        if (topLevelParent.isTitleTextView()) {
+        if (topLevelParent.checkIfTitleTextView()) {
             return topLevelParent;
         }
 
@@ -449,4 +453,24 @@ public class UIElement {
         return null;
     }
 
+
+    private static HashMap<UIElement, UIElement> getClickableElementsWithParents(UIElement uiElement, UIElement parentElement) {
+
+        if (uiElement == null) {
+            return new HashMap<>();
+        }
+
+        HashMap<UIElement, UIElement> clickableElementHashMap = new HashMap<>();
+
+        if (uiElement.checkIsClickable()) {
+            //Found a clickable element
+            clickableElementHashMap.put(uiElement, parentElement);
+        }
+
+        for (UIElement childElement: uiElement.getChildElements().values()) {
+            clickableElementHashMap.putAll(getClickableElementsWithParents(childElement, uiElement));
+        }
+
+        return clickableElementHashMap;
+    }
 }

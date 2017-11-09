@@ -7,27 +7,28 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+@SuppressWarnings("unused")
 public class CrawlingInput {
     public static final String FULL_SCREEN_MODE = "FULL";
     public static final String PARTIAL_SCREEN_MODE = "PARTIAL";
     public static final String UNDEFINED_SCREEN_MODE = "UNDEFINED";
     private int numViews;
-    private String rootSubTitle;
-    private String lastScreenSubTitle;
-    private String currentScreenType;
-    private String lastScreenType;
+    private String rootSubTitle = Utils.EMPTY_STRING;
+    private String lastScreenSubTitle = Utils.EMPTY_STRING;
+    private String currentScreenType = Utils.EMPTY_STRING;
+    private String lastScreenType = Utils.EMPTY_STRING;
+    private String rootTitle = Utils.EMPTY_STRING;
+    private String lastScreenTitle = Utils.EMPTY_STRING;
+    private String lastScreenPackageName = Utils.EMPTY_STRING;
+    private String rootPackageName = Utils.EMPTY_STRING;
+    private String lastUIAction = Utils.EMPTY_STRING;
     private int rootHeight;
     private int rootWidth;
-    private String rootTitle;
-    private String lastScreenTitle;
-    private String lastScreenPackageName;
     private RenderingView lastViewClicked;
-    private String rootPackageName;
-    private String lastUIAction;
-    private HashMap<String, String> deviceInfo;
-    private HashMap<Long, RenderingView> viewMap;
+    private HashMap<String, String> deviceInfo = new HashMap<>();
+    private HashMap<Long, RenderingView> viewMap = new HashMap<>() ;
 
-    public CrawlingInput(){}
+    public CrawlingInput() {}
 
     public CrawlingInput(int numViews, int rootHeight, int rootWidth, String rootTitle,
                          String lastScreenTitle, String lastScreenPackageName,
@@ -99,8 +100,7 @@ public class CrawlingInput {
     }
 
     public List<RenderingView> getRenderingViewList() {
-        List<RenderingView> list = new ArrayList<RenderingView>(viewMap.values());
-        return list;
+        return new ArrayList<RenderingView>(viewMap.values());
     }
 
     public boolean isEmpty() {

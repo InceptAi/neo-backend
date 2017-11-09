@@ -1,5 +1,6 @@
 package views;
 
+@SuppressWarnings("unused")
 public class ActionIdentifier {
     private ScreenIdentifier screenIdentifier;
     private ElementIdentifier elementIdentifier;

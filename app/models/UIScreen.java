@@ -1,27 +1,28 @@
 package models;
 
 import nlu.SimpleTextInterpreter;
-import nlu.TextInterpreter;
 import util.MergeUtils;
 import util.Utils;
 
 
 import java.util.*;
 
-public class UIScreen {
-    private String id = Utils.EMPTY_STRING;
-    private String parentScreenId = Utils.EMPTY_STRING;
-    private String screenType = Utils.EMPTY_STRING;
-    private String packageName = Utils.EMPTY_STRING;
-    private String title = Utils.EMPTY_STRING;
-    private String subTitle = Utils.EMPTY_STRING;
-    private HashMap<String, UIStep> nextStepToScreens;
-    private HashMap<String, UIStep> lastStepToCurrentScreen;
-    //private List<UIPath> uiPaths;
-    private HashMap<String, UIElement> uiElements;
-    private HashMap<String, String> deviceInfo;
-    private HashMap<String, UIScreen> childScreens;
+import static config.BackendConfiguration.MAX_SCORE_GAP_FOR_GROUPING_TOP_RESULTS_IN_FUZZY_ELEMENT_SEARCH;
+import static config.BackendConfiguration.MIN_MATCH_PERCENTAGE_FOR_FUZZY_ELEMENT_SEARCH_IN_SCREENS;
 
+public class UIScreen {
+    private final String id;
+    private final String screenType;
+    private final String packageName;
+    private final String title;
+    private final String subTitle;
+    private final HashMap<String, String> deviceInfo;
+    private String parentScreenId = Utils.EMPTY_STRING;
+    private HashMap<String, UIStep> nextStepToScreens = new HashMap<>();
+    private HashMap<String, UIStep> lastStepToCurrentScreen = new HashMap<>();
+    private HashMap<String, UIElement> uiElements = new HashMap<>();
+    private HashMap<String, UIScreen> childScreens = new HashMap<>();
+    private HashMap<String, SemanticAction> semanticActions = new HashMap<>();
 
     public HashMap<String, UIScreen> getChildScreens() {
         return childScreens;
@@ -48,24 +49,8 @@ public class UIScreen {
         return subTitle;
     }
 
-    public void setSubTitle(String subTitle) {
-        this.subTitle = subTitle;
-    }
-
     public String getScreenType() {
         return screenType;
-    }
-
-    public void setScreenType(String screenType) {
-        this.screenType = screenType;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public void setId(String id) {
-        this.id = id;
     }
 
     public String getId() {
@@ -73,18 +58,19 @@ public class UIScreen {
     }
 
     public UIScreen() {
-        this.uiElements = new HashMap<>();
+        this.id = Utils.EMPTY_STRING;
+        this.screenType = Utils.EMPTY_STRING;
+        this.packageName = Utils.EMPTY_STRING;
+        this.title = Utils.EMPTY_STRING;
+        this.subTitle = Utils.EMPTY_STRING;
         this.deviceInfo = new HashMap<>();
-        this.nextStepToScreens = new HashMap<>();
-        this.lastStepToCurrentScreen = new HashMap<>();
-        this.childScreens = new HashMap<>();
     }
 
     public UIScreen(String id, String parentScreenId, String screenType, String packageName,
                     String title, String subTitle, HashMap<String, UIStep> nextStepToScreens,
                     HashMap<String, UIStep> lastStepToCurrentScreen, HashMap<String, UIElement> uiElements,
-                    HashMap<String, String> deviceInfo, HashMap<String, UIScreen> childScreens) {
-        this.id = id;
+                    HashMap<String, String> deviceInfo, HashMap<String, UIScreen> childScreens,
+                    HashMap<String, SemanticAction> semanticActions) {
         this.parentScreenId = parentScreenId;
         this.screenType = screenType;
         this.packageName = packageName;
@@ -95,8 +81,40 @@ public class UIScreen {
         this.uiElements = uiElements;
         this.deviceInfo = deviceInfo;
         this.childScreens = childScreens;
+        this.semanticActions = semanticActions;
+        this.id = getScreenId(packageName, title, subTitle, screenType, deviceInfo.toString());
     }
 
+    public UIScreen(String title, String subTitle, String packageName, String screenType, HashMap<String, String> deviceInfo) {
+        this.screenType = screenType;
+        this.packageName = packageName;
+        this.title = title;
+        this.subTitle = subTitle;
+        this.deviceInfo = deviceInfo;
+        this.id = getScreenId(packageName, title, subTitle, screenType, deviceInfo.toString());
+        //Other initializations
+        this.uiElements = new HashMap<>();
+        this.nextStepToScreens = new HashMap<>();
+        this.lastStepToCurrentScreen = new HashMap<>();
+        this.childScreens = new HashMap<>();
+        this.semanticActions = new HashMap<>();
+    }
+
+    public void setUiElements(HashMap<String, UIElement> uiElements) {
+        this.uiElements = uiElements;
+    }
+
+    public void setChildScreens(HashMap<String, UIScreen> childScreens) {
+        this.childScreens = childScreens;
+    }
+
+    public HashMap<String, SemanticAction> getSemanticActions() {
+        return semanticActions;
+    }
+
+    public void setSemanticActions(HashMap<String, SemanticAction> semanticActions) {
+        this.semanticActions = semanticActions;
+    }
 
     public void add(UIElement uiElement) {
         this.uiElements.put(uiElement.id(), uiElement);
@@ -122,10 +140,6 @@ public class UIScreen {
         return lastStepToCurrentScreen;
     }
 
-//    public List<UIPath> getUiPaths() {
-//        return uiPaths;
-//    }
-
     public HashMap<String, UIElement> getUiElements() {
         return uiElements;
     }
@@ -134,20 +148,12 @@ public class UIScreen {
         return packageName;
     }
 
-    public void setPackageName(String packageName) {
-        this.packageName = packageName;
-    }
-
     public String getTitle() {
         return title;
     }
 
     public HashMap<String, String> getDeviceInfo() {
         return deviceInfo;
-    }
-
-    public void setDeviceInfo(HashMap<String, String> deviceInfo) {
-        this.deviceInfo = deviceInfo;
     }
 
     public HashMap<String, List<UIElement>> findElementsInScreenHierarchical(String className,
@@ -167,14 +173,14 @@ public class UIScreen {
 
         if (uiElementListMainScreen.isEmpty()) { //Only find in subScreens if nothing in main screen
             //Find in subScreens
-            boolean enableFuzzySearchInChildScreens = true;
+            final boolean ENABLE_FUZZY_SEARCH_IN_CHILD_SCREENS = true;
             for (UIScreen uiScreen: childScreens.values()) {
                 stringListHashMap.putAll(uiScreen.findElementsInScreenHierarchical(
                         className,
                         packageName,
                         text,
                         needClickable,
-                        true,
+                        ENABLE_FUZZY_SEARCH_IN_CHILD_SCREENS,
                         false));
             }
         } else {
@@ -237,12 +243,10 @@ public class UIScreen {
 
 
     private List<UIElement> findElementsInScreenFuzzyNested(String className, String packageName, String text, boolean needClickable) {
-        final double MIN_MATCH_PERCENTAGE_FOR_ELEMENT = 0.5;
-        final double MAX_GAP_FOR_CONFIDENCE = 0.2;
         HashMap<String, UIElement> uiElementListToReturn = new HashMap<>();
         HashMap<String, Double> matchingUIElementScores = new HashMap<>();
         HashMap<String, UIElement> matchingUIElements = new HashMap<>();
-        SimpleTextInterpreter textInterpreter = new SimpleTextInterpreter(MIN_MATCH_PERCENTAGE_FOR_ELEMENT);
+        SimpleTextInterpreter textInterpreter = new SimpleTextInterpreter(MIN_MATCH_PERCENTAGE_FOR_FUZZY_ELEMENT_SEARCH_IN_SCREENS);
         double bestMatchingScore = 0;
         for (UIElement uiElement: uiElements.values()) {
             //Do fuzzy search
@@ -259,7 +263,7 @@ public class UIScreen {
         //Sort the hash map based on match metric
         Map<String, Double> sortedMetricMap = Utils.sortHashMapByValueDescending(matchingUIElementScores);
         for (HashMap.Entry<String, Double> entry : sortedMetricMap.entrySet()) {
-            if (entry.getValue() > bestMatchingScore - MAX_GAP_FOR_CONFIDENCE) {
+            if (entry.getValue() > bestMatchingScore - MAX_SCORE_GAP_FOR_GROUPING_TOP_RESULTS_IN_FUZZY_ELEMENT_SEARCH) {
                 uiElementListToReturn.put(entry.getKey(), matchingUIElements.get(entry.getKey()));
             }
         }
@@ -315,6 +319,13 @@ public class UIScreen {
         return true;
     }
 
+    public void addSemanticActionToScreen(SemanticAction semanticAction) {
+        if (semanticAction == null) {
+            return;
+        }
+        semanticActions.put(semanticAction.fetchSemanticActionId(), semanticAction);
+    }
+
     @Override
     public String toString() {
         return "UIScreen{" +
@@ -326,6 +337,7 @@ public class UIScreen {
                 '}';
     }
 
+    @SuppressWarnings("SimplifiableIfStatement")
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -349,7 +361,7 @@ public class UIScreen {
         private UIElement uiElement;
         private UIElement topLevelParent;
 
-        public UIElementTuple(UIElement uiElement, UIElement topLevelParent) {
+        UIElementTuple(UIElement uiElement, UIElement topLevelParent) {
             this.uiElement = uiElement;
             this.topLevelParent = topLevelParent;
 

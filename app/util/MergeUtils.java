@@ -4,6 +4,7 @@ import models.*;
 
 import java.util.*;
 
+@SuppressWarnings("unused")
 public class MergeUtils {
 
     public static UIStepTable mergeUITables(UIStepTable uiStepTable1, UIStepTable uiStepTable2) {
@@ -73,7 +74,7 @@ public class MergeUtils {
     public static List<UIPath> getUIPathBasedOnLastScreenPath(List<UIPath> lastScreenUIPaths, UIStep uiStep) {
         List<UIPath> uiPathList = new ArrayList<>();
         if (lastScreenUIPaths == null || lastScreenUIPaths.isEmpty()) {
-            uiPathList.add(new UIPath(SemanticActionType.NAVIGATE, uiStep));
+            uiPathList.add(new UIPath(SemanticAction.NAVIGATE, uiStep));
         } else {
             for (UIPath uiPath: lastScreenUIPaths) {
                 UIPath updatedPath = UIPath.createNewPath(uiPath, uiStep);

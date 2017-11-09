@@ -4,28 +4,16 @@ import util.Utils;
 
 public class UIStep {
 
-    public enum UIStepType {
-        TO_ANOTHER_SCREEN("INTER_SCREEN"),
-        WITHIN_SAME_SCREEN("WITHIN_SAME_SCREEN"),
-        SOFT_STEP_INTER_SCREEN("SOFT_STEP_INTER_SCREEN"),
-        UNDEFINED("UNDEFINED");
+    public static final String TO_ANOTHER_SCREEN = "INTER_SCREEN";
+    public static final String WITHIN_SAME_SCREEN = "WITHIN_SAME_SCREEN";
+    public static final String SOFT_STEP_INTER_SCREEN = "SOFT_STEP_INTER_SCREEN";
+    public static final String UNDEFINED = "UNDEFINED";
 
-        private String id;
-
-        UIStepType(String id) {
-            this.id = id;
-        }
-
-        public String id() {
-            return id;
-        }
-    }
-
-    private String srcScreenId;
-    private String uiElementId;
-    private String uiEventId;
-    private String uiStepTypeId;
-    private String dstScreenId;
+    private final String srcScreenId;
+    private final String uiElementId;
+    private final String uiEventId;
+    private final String uiStepTypeId;
+    private final String dstScreenId;
 
     public UIStep(String srcScreenId, String dstScreenId,
                   String uiElementId, String uiEventId,
@@ -42,7 +30,7 @@ public class UIStep {
         this.srcScreenId = Utils.EMPTY_STRING;
         this.uiEventId = Utils.EMPTY_STRING;
         this.dstScreenId = Utils.EMPTY_STRING;
-        this.uiStepTypeId = UIStepType.UNDEFINED.id();
+        this.uiStepTypeId = UNDEFINED;
     }
 
     public UIStep(UIStep uiStep) {
@@ -83,19 +71,19 @@ public class UIStep {
         return uiStepTypeId;
     }
 
-    public boolean isUndefined() {
-        return uiStepTypeId.equalsIgnoreCase(UIStepType.UNDEFINED.id());
+    public boolean checkIfUndefined() {
+        return uiStepTypeId.equalsIgnoreCase(UNDEFINED);
     }
 
-    public boolean isInterScreenStep() {
-        return uiStepTypeId.equalsIgnoreCase(UIStepType.TO_ANOTHER_SCREEN.id());
+    public boolean checkIfInterScreenStep() {
+        return uiStepTypeId.equalsIgnoreCase(TO_ANOTHER_SCREEN);
     }
 
-    public boolean isWithinSameScreen() {
-        return uiStepTypeId.equalsIgnoreCase(UIStepType.WITHIN_SAME_SCREEN.id());
+    public boolean checkIfWithinSameScreen() {
+        return uiStepTypeId.equalsIgnoreCase(WITHIN_SAME_SCREEN);
     }
 
-    public boolean isSoftStep() { return uiStepTypeId.equalsIgnoreCase(UIStepType.SOFT_STEP_INTER_SCREEN.id()); }
+    public boolean checkIfSoftStep() { return uiStepTypeId.equalsIgnoreCase(SOFT_STEP_INTER_SCREEN); }
 
     @Override
     public String toString() {

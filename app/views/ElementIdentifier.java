@@ -2,6 +2,7 @@ package views;
 
 import java.util.List;
 
+@SuppressWarnings("unused")
 public class ElementIdentifier {
     private String className;
     private String packageName;

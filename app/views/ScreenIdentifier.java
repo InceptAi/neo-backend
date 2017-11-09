@@ -1,5 +1,6 @@
 package views;
 
+@SuppressWarnings("unused")
 public class ScreenIdentifier {
     private String title;
     private String subTitle;

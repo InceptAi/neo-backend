@@ -1,20 +1,19 @@
 package nlu;
 
+import config.BackendConfiguration;
 import util.Utils;
 
-import java.lang.reflect.Array;
 import java.util.*;
 
-public class SimpleTextInterpreter extends TextInterpreter {
-    private static final double MIN_MATCH_PERCENTAGE = 0.5;
-    private double minMatchPercentage;
+public class SimpleTextInterpreter implements TextInterpreter {
+    private final double minMatchPercentage;
 
     public SimpleTextInterpreter(double minMatchPercentage) {
         this.minMatchPercentage = minMatchPercentage;
     }
 
     public SimpleTextInterpreter() {
-        this.minMatchPercentage = MIN_MATCH_PERCENTAGE;
+        this.minMatchPercentage = BackendConfiguration.DEFAULT_MIN_MATCH_PERCENTAGE_FOR_SIMPLE_TEXT_INTERPRETER;
     }
 
     @Override

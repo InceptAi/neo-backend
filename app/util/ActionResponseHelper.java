@@ -4,18 +4,32 @@ import graph.PathFinder;
 import models.*;
 import nlu.SimpleTextInterpreter;
 import storage.SemanticActionStore;
-import storage.UIScreenStore;
+import services.UIScreenManager;
 import views.*;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.*;
 
+@Singleton
 public class ActionResponseHelper {
+    private UIScreenManager uiScreenManager;
+    private SemanticActionStore semanticActionStore;
+    private PathFinder pathFinder;
 
+    @Inject
+    public ActionResponseHelper(UIScreenManager uiScreenManager,
+                                SemanticActionStore semanticActionStore,
+                                PathFinder pathFinder) {
+        this.uiScreenManager = uiScreenManager;
+        this.semanticActionStore = semanticActionStore;
+        this.pathFinder = pathFinder;
+    }
     //Take input the semantic ids and best matching string and create action response
-    public static ActionResponse createActionResponse(String inputText, String packageName,
-                                                      String baseScreenTitle, String baseScreenSubTitle,
-                                                      String deviceInfo, PathFinder pathFinder,
-                                                      int maxResults, boolean fuzzyScreenSearch) {
+    public ActionResponse createActionResponse(String inputText, String packageName,
+                                               String baseScreenTitle, String baseScreenSubTitle,
+                                               String deviceInfo, int maxResults,
+                                               boolean fuzzyScreenSearch) {
         //sanitize the input
         inputText = Utils.sanitizeText(inputText);
         deviceInfo = Utils.sanitizeText(deviceInfo);
@@ -24,12 +38,12 @@ public class ActionResponseHelper {
         //Make sure starting screen is not null
         UIScreen startingScreen;
         if (fuzzyScreenSearch) {
-            startingScreen = UIScreenStore.getInstance().findTopMatchingScreenIdByKeywordAndScreenType(
+            startingScreen = uiScreenManager.findTopMatchingScreenIdByKeywordAndScreenType(
                     baseScreenTitle,
                     packageName,
                     CrawlingInput.FULL_SCREEN_MODE);
         } else {
-            startingScreen = UIScreenStore.getInstance().getScreen(
+            startingScreen = uiScreenManager.getScreen(
                     packageName,
                     baseScreenTitle,
                     baseScreenSubTitle,
@@ -45,17 +59,17 @@ public class ActionResponseHelper {
         HashMap<String, SemanticActionStore.SemanticActionMatchingTextAndScore> topMatchingActions;
         if (Utils.nullOrEmpty(deviceInfo) && Utils.nullOrEmpty(inputText)) {
             //return all semantic actions
-            topMatchingActions = SemanticActionStore.getInstance().returnAllActions();
+            topMatchingActions = semanticActionStore.returnAllActions();
         } else {
-            topMatchingActions = SemanticActionStore.getInstance().searchActions(inputText,
+            topMatchingActions = semanticActionStore.searchActions(inputText,
                     deviceInfo, new SimpleTextInterpreter(), maxResults);
         }
         for (HashMap.Entry<String, SemanticActionStore.SemanticActionMatchingTextAndScore> entry : topMatchingActions.entrySet()) {
             String actionId = entry.getKey();
             SemanticActionStore.SemanticActionMatchingTextAndScore descriptionAndScore = entry.getValue();
-            SemanticAction semanticAction = SemanticActionStore.getInstance().getAction(actionId);
-            UIScreen dstScreen = UIScreenStore.getInstance().getScreen(semanticAction.getUiScreenId());
-            UIScreen srcScreen = UIScreenStore.getInstance().getScreen(startingScreen.getId());
+            SemanticAction semanticAction = semanticActionStore.getAction(actionId);
+            UIScreen dstScreen = uiScreenManager.getScreen(semanticAction.getUiScreenId());
+            UIScreen srcScreen = uiScreenManager.getScreen(startingScreen.getId());
             if (srcScreen == null || dstScreen == null) {
                 continue;
             }
@@ -75,34 +89,34 @@ public class ActionResponseHelper {
                     dstScreen.getPackageName(),
                     dstScreen.getScreenType());
 
-            String keywordString = Utils.EMPTY_STRING;
+            String keywordString;
             Set<String> classNamesToSearch = new HashSet<>();
             classNamesToSearch.add(ViewUtils.LINEAR_LAYOUT_CLASS_NAME);
             classNamesToSearch.add(ViewUtils.RELATIVE_LAYOUT_CLASS_NAME);
             if (ViewUtils.isLinearOrRelativeLayoutClassName(uiElementTuple.getUiElement().getClassName())) {
-                keywordString = uiElementTuple.getUiElement().getAllText();
+                keywordString = uiElementTuple.getUiElement().fetchAllText();
             } else {
                 UIElement closestParentWithLinearLayout = UIElement.findFirstParentWithGivenClassNames(
                         semanticAction.getUiElementId(),
                         classNamesToSearch,
                         uiElementTuple.getTopLevelParent());
                 if (closestParentWithLinearLayout != null) {
-                    keywordString = closestParentWithLinearLayout.getAllText();
+                    keywordString = closestParentWithLinearLayout.fetchAllText();
                 } else {
-                    keywordString = uiElementTuple.getTopLevelParent().getAllText();
+                    keywordString = uiElementTuple.getTopLevelParent().fetchAllText();
                 }
             }
 
             ElementIdentifier elementIdentifier = createElementIdentifier(
                     uiElementTuple.getUiElement().getClassName(), // TODO : top level element to clickable class name
                     uiElementTuple.getUiElement().getPackageName(),
-                    keywordString); //TODO: UIElement gettext needs to return the text of the parent
+                    keywordString); //TODO: UIElement get text needs to return the text of the parent
 
             ActionIdentifier actionIdentifier = new ActionIdentifier(
                     dstScreenIdentifier,
                     elementIdentifier,
                     descriptionAndScore.getMatchingDescription(),
-                    semanticAction.getSemanticActionName(),
+                    semanticAction.getSemanticActionType(),
                     descriptionAndScore.getConfidenceScore());
 
             //Create the condition to check for success
@@ -114,15 +128,14 @@ public class ActionResponseHelper {
         return new ActionResponse(actionDetailsList);
     }
 
-    public static List<NavigationIdentifier> getNavigationPathForClient(UIPath uiPath) {
+    private List<NavigationIdentifier> getNavigationPathForClient(UIPath uiPath) {
         if (uiPath == null) {
             return null;
         }
         List<NavigationIdentifier> navigationIdentifierList = new ArrayList<>();
         for (UIStep uiStep: uiPath.getUiSteps()) {
-            UIScreen srcScreen = UIScreenStore.getInstance().getScreen(uiStep.getSrcScreenId());
-            UIScreen dstScreen = UIScreenStore.getInstance().getScreen(uiStep.getDstScreenId());
-            //UIElement uiElement = srcScreen.getUiElements().get(uiStep.getUiElementId());
+            UIScreen srcScreen = uiScreenManager.getScreen(uiStep.getSrcScreenId());
+            UIScreen dstScreen = uiScreenManager.getScreen(uiStep.getDstScreenId());
             UIScreen.UIElementTuple uiElementTuple = srcScreen.findElementAndTopLevelParentById(uiStep.getUiElementId());
             UIElement uiElement = uiElementTuple != null ? uiElementTuple.getUiElement() : null;
             if (srcScreen == null || dstScreen == null || uiElementTuple == null) {
@@ -141,7 +154,7 @@ public class ActionResponseHelper {
             ElementIdentifier elementIdentifier = createElementIdentifier(
                     uiElement.getClassName(),
                     uiElement.getPackageName(),
-                    uiElement.getAllText()); //
+                    uiElement.fetchAllText()); //
             NavigationIdentifier navigationIdentifier = new NavigationIdentifier(
                     srcIdentifier,
                     dstIdentifier,
@@ -151,16 +164,16 @@ public class ActionResponseHelper {
         return navigationIdentifierList;
     }
 
-    public static ElementIdentifier createElementIdentifier(String className, String packageName, String elementText) {
+    private static ElementIdentifier createElementIdentifier(String className, String packageName, String elementText) {
         return new ElementIdentifier(className, packageName, Utils.generateKeywordsForFindingElement(elementText));
     }
 
 
-    public static Condition create(SemanticAction semanticAction, String matchingDescription) {
+    private static Condition create(SemanticAction semanticAction, String matchingDescription) {
         Condition condition = null;
-        switch (SemanticActionType.typeStringToEnum(semanticAction.getSemanticActionName())) {
+        switch (semanticAction.getSemanticActionType()) {
             //TODO Handle checked text view separately -- use SELECT instead of toggle and create conditions accordingly
-            case TOGGLE:
+            case SemanticAction.TOGGLE:
                 if (Utils.containsWord(matchingDescription, ViewUtils.ON_TEXT)) {
                     condition = new Condition(ViewUtils.ON_TEXT.toLowerCase());
                 } else if (Utils.containsWord(matchingDescription, ViewUtils.OFF_TEXT)) {
@@ -169,7 +182,7 @@ public class ActionResponseHelper {
                     condition = new Condition(semanticAction.getSemanticActionDescription());
                 }
                 break;
-            case SEEK:
+            case SemanticAction.SEEK:
                 if (Utils.containsWord(matchingDescription, ViewUtils.ON_TEXT)) {
                     condition = new Condition(ViewUtils.ON_TEXT.toLowerCase());
                 } else if (Utils.containsWord(matchingDescription, ViewUtils.OFF_TEXT)) {
