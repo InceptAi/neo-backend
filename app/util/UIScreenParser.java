@@ -38,11 +38,11 @@ public class UIScreenParser {
                 crawlingInput.getCurrentScreenType(),
                 crawlingInput.getDeviceInfo());
 
-        List<Long> sortedViewIds= new ArrayList<>(crawlingInput.getViewMap().keySet());
+        List<String> sortedViewIds= new ArrayList<>(crawlingInput.getViewMap().keySet());
         Collections.sort(sortedViewIds);
 
-        HashMap<Long, UIElement> viewIdToUIElementMap = new HashMap<>();
-        for (Long viewId: sortedViewIds) {
+        HashMap<String, UIElement> viewIdToUIElementMap = new HashMap<>();
+        for (String viewId: sortedViewIds) {
             RenderingView renderingView = crawlingInput.getViewMap().get(viewId);
             UIElement uiElement = createUIElementFromRenderingView(renderingView);
             viewIdToUIElementMap.put(renderingView.getFlatViewId(), uiElement);
@@ -53,7 +53,7 @@ public class UIScreenParser {
         List<UIElement> allActionableElementsList = new ArrayList<>();
         List<UIElement> parentOfActionableElementsList = new ArrayList<>();
 
-        for (Long viewId: sortedViewIds) {
+        for (String viewId: sortedViewIds) {
             RenderingView renderingView = crawlingInput.getViewMap().get(viewId);
             UIElement currentElement = viewIdToUIElementMap.get(renderingView.getFlatViewId());
             //parent info
