@@ -1,11 +1,11 @@
 package util;
 
+import com.inceptai.neopojos.*;
 import graph.PathFinder;
 import models.*;
 import nlu.SimpleTextInterpreter;
-import storage.SemanticActionStore;
 import services.UIScreenManager;
-import views.*;
+import storage.SemanticActionStore;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;

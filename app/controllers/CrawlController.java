@@ -2,13 +2,13 @@ package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import services.UIScreenManager;
-import util.UIScreenParser;
-import views.CrawlingInput;
+import com.inceptai.neopojos.CrawlingInput;
 import models.UIScreen;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
+import services.UIScreenManager;
+import util.UIScreenParser;
 import util.Utils;
 
 import javax.inject.Inject;

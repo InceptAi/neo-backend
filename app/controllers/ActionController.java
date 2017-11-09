@@ -2,18 +2,18 @@ package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.inceptai.neopojos.ActionResponse;
 import models.SemanticAction;
 import play.mvc.Controller;
 import play.mvc.Result;
 import storage.SemanticActionStore;
-import util.Utils;
-import views.ActionResponse;
 import util.ActionResponseHelper;
+import util.Utils;
 
 import javax.inject.Inject;
 import java.util.Set;
 
-import static config.BackendConfiguration.*;
+import static config.BackendConfiguration.DEFAULT_MAX_RESULTS_FOR_ACTION_SEARCH;
 
 @SuppressWarnings("unused")
 public class ActionController extends Controller {

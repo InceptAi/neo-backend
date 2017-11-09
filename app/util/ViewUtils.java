@@ -1,6 +1,6 @@
 package util;
 
-import views.RenderingView;
+import com.inceptai.neopojos.RenderingView;
 
 import java.util.HashMap;
 import java.util.Map;

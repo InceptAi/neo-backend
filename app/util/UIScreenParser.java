@@ -1,18 +1,18 @@
 package util;
 
+import com.inceptai.neopojos.CrawlingInput;
+import com.inceptai.neopojos.RenderingView;
 import config.BackendConfiguration;
 import models.*;
 import services.UIScreenManager;
-import views.CrawlingInput;
-import views.RenderingView;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.*;
 
-import static views.CrawlingInput.FULL_SCREEN_MODE;
-import static views.CrawlingInput.PARTIAL_SCREEN_MODE;
+import static com.inceptai.neopojos.CrawlingInput.FULL_SCREEN_MODE;
+import static com.inceptai.neopojos.CrawlingInput.PARTIAL_SCREEN_MODE;
 
 @Singleton
 public class UIScreenParser {
@@ -30,9 +30,10 @@ public class UIScreenParser {
             return null;
         }
 
+        String sanitizedSubtitle = getSanitizedSubTitle(crawlingInput.getRootSubTitle());
         UIScreen screenToBeCreated = new UIScreen(
                 crawlingInput.getRootTitle(),
-                !isSubtitlePlaceholderText(crawlingInput.getRootSubTitle()) ? crawlingInput.getRootSubTitle() : Utils.EMPTY_STRING,
+                !isSubtitlePlaceholderText(sanitizedSubtitle) ? sanitizedSubtitle : Utils.EMPTY_STRING,
                 crawlingInput.getRootPackageName(),
                 crawlingInput.getCurrentScreenType(),
                 crawlingInput.getDeviceInfo());
@@ -89,7 +90,7 @@ public class UIScreenParser {
         UIStep uiStep = getLastUIStep(
                 screenToBeCreated,
                 crawlingInput.getLastScreenTitle(),
-                crawlingInput.getLastScreenSubTitle(),
+                getSanitizedSubTitle(crawlingInput.getLastScreenSubTitle()),
                 crawlingInput.getLastScreenPackageName(),
                 crawlingInput.getLastScreenType(),
                 crawlingInput.getLastViewClicked(),
@@ -309,6 +310,15 @@ public class UIScreenParser {
             }
         }
         return semanticActionList;
+    }
+
+    private static String getSanitizedSubTitle(String subTitle) {
+        String subtitle = Utils.sanitizeText(subTitle);
+        if (ViewUtils.isTextOnOrOff(subtitle)) {
+            return ViewUtils.ON_OFF_TEXT;
+        } else {
+            return subtitle;
+        }
     }
 
     private static boolean isSubtitlePlaceholderText(String subTitle) {
