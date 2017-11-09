@@ -54,7 +54,8 @@ public class UIScreen {
     }
 
     public String getId() {
-        return getScreenId(packageName, title, subTitle, screenType, deviceInfo.toString());
+        //return getScreenId(packageName, title, subTitle, screenType, deviceInfo.toString());
+        return id;
     }
 
     public UIScreen() {

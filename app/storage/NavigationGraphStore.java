@@ -39,8 +39,10 @@ public class NavigationGraphStore {
         if (uiScreen == null) {
             return;
         }
-        HashMap<String, UIStep> nextSteps = uiScreen.getNextStepToScreens();
-        for (UIStep uiStep: nextSteps.values()) {
+        for (UIStep uiStep: uiScreen.getNextStepToScreens().values()) {
+            addNavigationEdgeToGraph(uiStep);
+        }
+        for (UIStep uiStep: uiScreen.getLastStepToCurrentScreen().values()) {
             addNavigationEdgeToGraph(uiStep);
         }
     }

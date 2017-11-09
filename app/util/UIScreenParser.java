@@ -33,8 +33,8 @@ public class UIScreenParser {
         UIScreen screenToBeCreated = new UIScreen(
                 crawlingInput.getRootTitle(),
                 !isSubtitlePlaceholderText(crawlingInput.getRootSubTitle()) ? crawlingInput.getRootSubTitle() : Utils.EMPTY_STRING,
-                crawlingInput.getCurrentScreenType(),
                 crawlingInput.getRootPackageName(),
+                crawlingInput.getCurrentScreenType(),
                 crawlingInput.getDeviceInfo());
 
         List<Long> sortedViewIds= new ArrayList<>(crawlingInput.getViewMap().keySet());
