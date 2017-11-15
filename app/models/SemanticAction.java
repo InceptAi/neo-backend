@@ -27,7 +27,7 @@ public class SemanticAction {
     private String uiScreenId;
     private String uiElementId;
     private String uiActionId;
-    private String deviceInfo;
+    private MatchingInfo matchingInfo;
 
     private SemanticAction(UIScreen uiScreen, UIElement uiElement, UIElement parentElement, UIAction uiAction) {
         String actionDescription = uiElement.fetchAllText();
@@ -88,7 +88,7 @@ public class SemanticAction {
         this.screenTitle = uiScreen.getTitle();
         this.screenSubTitle = uiScreen.getSubTitle();
         this.packageName = uiScreen.getPackageName();
-        this.deviceInfo = uiScreen.getDeviceInfo().toString();
+        this.matchingInfo = uiScreen.getMatchingInfo();
     }
 
 
@@ -101,13 +101,14 @@ public class SemanticAction {
         uiActionId = Utils.EMPTY_STRING;
         screenTitle = Utils.EMPTY_STRING;
         packageName = Utils.EMPTY_STRING;
-        deviceInfo = Utils.EMPTY_STRING;
+        matchingInfo = new MatchingInfo();
         screenSubTitle = Utils.EMPTY_STRING;
     }
 
     public SemanticAction(String screenTitle, String screenSubTitle, String packageName,
                           String semanticActionDescription, String semanticActionType,
-                          String uiScreenId, String uiElementId, String uiActionId, String deviceInfo) {
+                          String uiScreenId, String uiElementId, String uiActionId,
+                          MatchingInfo matchingInfo) {
         this.screenTitle = screenTitle;
         this.screenSubTitle = screenSubTitle;
         this.packageName = packageName;
@@ -116,7 +117,7 @@ public class SemanticAction {
         this.uiScreenId = uiScreenId;
         this.uiElementId = uiElementId;
         this.uiActionId = uiActionId;
-        this.deviceInfo = deviceInfo;
+        this.matchingInfo = matchingInfo;
     }
 
     /**
@@ -197,7 +198,7 @@ public class SemanticAction {
         if (!semanticActionType.equals(that.semanticActionType)) return false;
         if (!uiScreenId.equals(that.uiScreenId)) return false;
         if (!uiElementId.equals(that.uiElementId)) return false;
-        if (!deviceInfo.equals(that.deviceInfo)) return false;
+        if (!matchingInfo.equals(that.matchingInfo)) return false;
         return uiActionId.equals(that.uiActionId);
     }
 
@@ -211,7 +212,7 @@ public class SemanticAction {
         result = 31 * result + uiScreenId.hashCode();
         result = 31 * result + uiElementId.hashCode();
         result = 31 * result + uiActionId.hashCode();
-        result = 31 * result + deviceInfo.hashCode();
+        result = 31 * result + matchingInfo.hashCode();
         return result;
     }
 
@@ -226,7 +227,7 @@ public class SemanticAction {
                 ", uiScreenId='" + uiScreenId + '\'' +
                 ", uiElementId='" + uiElementId + '\'' +
                 ", uiActionId='" + uiActionId + '\'' +
-                ", deviceInfo='" + deviceInfo + '\'' +
+                ", deviceInfo='" + matchingInfo + '\'' +
                 '}';
     }
 
@@ -246,12 +247,12 @@ public class SemanticAction {
         this.packageName = packageName;
     }
 
-    public String getDeviceInfo() {
-        return deviceInfo;
+    public MatchingInfo getMatchingInfo() {
+        return matchingInfo;
     }
 
-    public void setDeviceInfo(String deviceInfo) {
-        this.deviceInfo = deviceInfo;
+    public void setMatchingInfo(MatchingInfo matchingInfo) {
+        this.matchingInfo = matchingInfo;
     }
 
     public List<String> fetchStringsToMatch() {

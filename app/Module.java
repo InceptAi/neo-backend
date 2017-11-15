@@ -4,6 +4,7 @@ import java.time.Clock;
 import graph.PathFinder;
 import graph.ShortestPathFinder;
 import services.*;
+import storage.FuzzySemanticActionStore;
 import storage.NavigationGraphStore;
 import storage.SemanticActionStore;
 import services.UIScreenManager;
@@ -31,9 +32,10 @@ public class Module extends AbstractModule {
         // Set AtomicCounter as the implementation for Counter.
         bind(Counter.class).to(AtomicCounter.class);
         bind(DatabaseBackend.class).to(FirestoreBackend.class);
+        bind(SemanticActionStore.class).to(FuzzySemanticActionStore.class);
         bind(PathFinder.class).to(ShortestPathFinder.class);
         bind(UIScreenManager.class).asEagerSingleton();
-        bind(SemanticActionStore.class).asEagerSingleton();
+        bind(FuzzySemanticActionStore.class).asEagerSingleton();
         bind(NavigationGraphStore.class).asEagerSingleton();
         //initialize neo stuff
         Utils.printDebug("In Configure of module");

@@ -1,10 +1,13 @@
-package util;
+package helpers;
 
 import com.inceptai.neopojos.CrawlingInput;
 import com.inceptai.neopojos.RenderingView;
 import config.BackendConfiguration;
 import models.*;
 import services.UIScreenManager;
+import util.MergeUtils;
+import util.Utils;
+import util.ViewUtils;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
@@ -31,12 +34,13 @@ public class UIScreenParser {
         }
 
         String sanitizedSubtitle = getSanitizedSubTitle(crawlingInput.getRootSubTitle());
+        MatchingInfo matchingInfo = createMatchingInfoFromCrawlingInput(crawlingInput);
         UIScreen screenToBeCreated = new UIScreen(
                 crawlingInput.getRootTitle(),
                 !isSubtitlePlaceholderText(sanitizedSubtitle) ? sanitizedSubtitle : Utils.EMPTY_STRING,
                 crawlingInput.getRootPackageName(),
                 crawlingInput.getCurrentScreenType(),
-                crawlingInput.getDeviceInfo());
+                matchingInfo);
 
         List<String> sortedViewIds= new ArrayList<>(crawlingInput.getViewMap().keySet());
         Collections.sort(sortedViewIds);
@@ -194,7 +198,7 @@ public class UIScreenParser {
                     lastScreenTitle,
                     lastScreenSubTitle,
                     lastScreenType,
-                    currentScreen.getDeviceInfo().toString());
+                    currentScreen.getMatchingInfo().toString());
             //lastScreen = UIScreenManager.getInstance().getScreen(lastScreenId);
             lastScreen = uiScreenManager.getScreen(lastScreenId);
         }
@@ -335,4 +339,31 @@ public class UIScreenParser {
         return crawlingInput.getRootPackageName() == null || !crawlingInput.getRootPackageName().equalsIgnoreCase("com.android.systemui");
     }
 
+    public static MatchingInfo createMatchingInfoFromCrawlingInput(CrawlingInput crawlingInput) {
+        if (crawlingInput == null) {
+            return new MatchingInfo();
+        }
+        return new MatchingInfo(
+                crawlingInput.getAppVersion(),
+                crawlingInput.getVersionCode(),
+                crawlingInput.getDeviceInfo().getManufacturer(),
+                crawlingInput.getDeviceInfo().getModel(),
+                crawlingInput.getDeviceInfo().getRelease(),
+                crawlingInput.getDeviceInfo().getSdk(),
+                crawlingInput.getDeviceInfo().getHardware(),
+                crawlingInput.getDeviceInfo().getProduct());
+    }
+
+
 }
+
+
+
+
+
+
+
+
+
+
+

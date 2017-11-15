@@ -8,7 +8,7 @@ import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 import services.UIScreenManager;
-import util.UIScreenParser;
+import helpers.UIScreenParser;
 import util.Utils;
 
 import javax.inject.Inject;

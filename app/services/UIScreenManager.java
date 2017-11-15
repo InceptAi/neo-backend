@@ -1,5 +1,6 @@
 package services;
 
+import models.MatchingInfo;
 import models.UIScreen;
 import nlu.SimpleTextInterpreter;
 import nlu.TextInterpreter;
@@ -85,7 +86,7 @@ public class UIScreenManager {
                 uiScreen.getTitle(),
                 Utils.EMPTY_STRING,
                 uiScreen.getScreenType(),
-                uiScreen.getDeviceInfo().toString());
+                uiScreen.getMatchingInfo().toString());
         UIScreen emptySubtitleScreen = uiScreenMap.get(screenIdWithEmptySubtitle);
         if (emptySubtitleScreen != null) {
             //Remove the empty subtitle screen
@@ -101,8 +102,8 @@ public class UIScreenManager {
     }
 
 
-    public UIScreen getScreen(String packageName, String title, String subTitle, String screenType, String deviceInfo) {
-        if (Utils.nullOrEmpty(deviceInfo)) {
+    public UIScreen getScreen(String packageName, String title, String subTitle, String screenType, MatchingInfo matchingInfo) {
+        if (Utils.nullOrEmpty(matchingInfo.toString())) {
             return getScreen(packageName, title);
         }
         Set<String> screenIdListForTitleAndPackage = screenTitleToScreenIdMap.get(getKeyForTitleMap(title, packageName, screenType));
@@ -112,7 +113,7 @@ public class UIScreenManager {
                 //One match only -- bingo
                 return uiScreenMap.get(screenIdList.get(0));
             } else {
-                return uiScreenMap.get(UIScreen.getScreenId(packageName, title, subTitle, screenType, deviceInfo));
+                return uiScreenMap.get(UIScreen.getScreenId(packageName, title, subTitle, screenType, matchingInfo.toString()));
             }
         }
         return null;

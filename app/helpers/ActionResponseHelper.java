@@ -1,4 +1,4 @@
-package util;
+package helpers;
 
 import com.inceptai.neopojos.*;
 import graph.PathFinder;
@@ -6,6 +6,8 @@ import models.*;
 import nlu.SimpleTextInterpreter;
 import services.UIScreenManager;
 import storage.SemanticActionStore;
+import util.Utils;
+import util.ViewUtils;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -25,16 +27,32 @@ public class ActionResponseHelper {
         this.semanticActionStore = semanticActionStore;
         this.pathFinder = pathFinder;
     }
+
+
     //Take input the semantic ids and best matching string and create action response
     public ActionResponse createActionResponse(String inputText, String packageName,
                                                String baseScreenTitle, String baseScreenSubTitle,
-                                               String deviceInfo, int maxResults,
+                                               DeviceInfo deviceInfo,
+                                               int maxResults,
+                                               boolean fuzzyScreenSearch) {
+        return createActionResponse(inputText, packageName, baseScreenTitle,
+                baseScreenSubTitle, deviceInfo,
+                util.Utils.EMPTY_STRING, util.Utils.EMPTY_STRING,
+                maxResults, fuzzyScreenSearch);
+
+    }
+    //Take input the semantic ids and best matching string and create action response
+    public ActionResponse createActionResponse(String inputText, String packageName,
+                                               String baseScreenTitle, String baseScreenSubTitle,
+                                               DeviceInfo deviceInfo,
+                                               String appVersion, String versionCode,
+                                               int maxResults,
                                                boolean fuzzyScreenSearch) {
         //sanitize the input
-        inputText = Utils.sanitizeText(inputText);
-        deviceInfo = Utils.sanitizeText(deviceInfo);
-        baseScreenTitle = Utils.sanitizeText(baseScreenTitle);
-        baseScreenSubTitle = Utils.sanitizeText(baseScreenSubTitle);
+        inputText = util.Utils.sanitizeText(inputText);
+        baseScreenTitle = util.Utils.sanitizeText(baseScreenTitle);
+        baseScreenSubTitle = util.Utils.sanitizeText(baseScreenSubTitle);
+        MatchingInfo matchingInfo = new MatchingInfo(deviceInfo, appVersion, versionCode);
         //Make sure starting screen is not null
         UIScreen startingScreen;
         if (fuzzyScreenSearch) {
@@ -48,7 +66,7 @@ public class ActionResponseHelper {
                     baseScreenTitle,
                     baseScreenSubTitle,
                     CrawlingInput.FULL_SCREEN_MODE,
-                    deviceInfo);
+                    matchingInfo);
         }
 
         if (startingScreen == null) {
@@ -56,17 +74,17 @@ public class ActionResponseHelper {
         }
         List<ActionDetails> actionDetailsList = new ArrayList<>();
         //find top actions first
-        HashMap<String, SemanticActionStore.SemanticActionMatchingTextAndScore> topMatchingActions;
-        if (Utils.nullOrEmpty(deviceInfo) && Utils.nullOrEmpty(inputText)) {
+        Map<String, SemanticActionMatchingTextAndScore> topMatchingActions;
+        if (matchingInfo.isEmpty() && util.Utils.nullOrEmpty(inputText)) {
             //return all semantic actions
-            topMatchingActions = semanticActionStore.returnAllActions();
+            topMatchingActions = semanticActionStore.returnAllActionsWithScores();
         } else {
-            topMatchingActions = semanticActionStore.searchActions(inputText,
-                    deviceInfo, new SimpleTextInterpreter(), maxResults);
+            topMatchingActions = semanticActionStore.searchActions(inputText, packageName,
+                    matchingInfo, new SimpleTextInterpreter(), maxResults);
         }
-        for (HashMap.Entry<String, SemanticActionStore.SemanticActionMatchingTextAndScore> entry : topMatchingActions.entrySet()) {
+        for (HashMap.Entry<String, SemanticActionMatchingTextAndScore> entry : topMatchingActions.entrySet()) {
             String actionId = entry.getKey();
-            SemanticActionStore.SemanticActionMatchingTextAndScore descriptionAndScore = entry.getValue();
+            SemanticActionMatchingTextAndScore descriptionAndScore = entry.getValue();
             SemanticAction semanticAction = semanticActionStore.getAction(actionId);
             UIScreen dstScreen = uiScreenManager.getScreen(semanticAction.getUiScreenId());
             UIScreen srcScreen = uiScreenManager.getScreen(startingScreen.getId());
@@ -165,7 +183,7 @@ public class ActionResponseHelper {
     }
 
     private static ElementIdentifier createElementIdentifier(String className, String packageName, String elementText) {
-        return new ElementIdentifier(className, packageName, Utils.generateKeywordsForFindingElement(elementText));
+        return new ElementIdentifier(className, packageName, util.Utils.generateKeywordsForFindingElement(elementText));
     }
 
 
@@ -174,16 +192,16 @@ public class ActionResponseHelper {
         switch (semanticAction.getSemanticActionType()) {
             //TODO Handle checked text view separately -- use SELECT instead of toggle and create conditions accordingly
             case SemanticAction.TOGGLE:
-                if (Utils.containsWord(matchingDescription, ViewUtils.ON_TEXT)) {
+                if (util.Utils.containsWord(matchingDescription, ViewUtils.ON_TEXT)) {
                     condition = new Condition(ViewUtils.ON_TEXT.toLowerCase());
-                } else if (Utils.containsWord(matchingDescription, ViewUtils.OFF_TEXT)) {
+                } else if (util.Utils.containsWord(matchingDescription, ViewUtils.OFF_TEXT)) {
                     condition = new Condition(ViewUtils.OFF_TEXT.toLowerCase());
                 } else {
                     condition = new Condition(semanticAction.getSemanticActionDescription());
                 }
                 break;
             case SemanticAction.SEEK:
-                if (Utils.containsWord(matchingDescription, ViewUtils.ON_TEXT)) {
+                if (util.Utils.containsWord(matchingDescription, ViewUtils.ON_TEXT)) {
                     condition = new Condition(ViewUtils.ON_TEXT.toLowerCase());
                 } else if (Utils.containsWord(matchingDescription, ViewUtils.OFF_TEXT)) {
                     condition = new Condition(ViewUtils.OFF_TEXT.toLowerCase());
@@ -194,5 +212,4 @@ public class ActionResponseHelper {
         }
         return condition;
     }
-
 }

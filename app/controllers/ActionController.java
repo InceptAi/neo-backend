@@ -3,14 +3,17 @@ package controllers;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.inceptai.neopojos.ActionResponse;
+import com.inceptai.neopojos.DeviceInfo;
 import models.SemanticAction;
+import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 import storage.SemanticActionStore;
-import util.ActionResponseHelper;
+import helpers.ActionResponseHelper;
 import util.Utils;
 
 import javax.inject.Inject;
+import java.io.IOException;
 import java.util.Set;
 
 import static config.BackendConfiguration.DEFAULT_MAX_RESULTS_FOR_ACTION_SEARCH;
@@ -29,16 +32,23 @@ public class ActionController extends Controller {
         return ok(Utils.createResponse(jsonData, true));
     }
 
-    public Result searchActions(String inputText, String packageName, String baseScreenTitle, String deviceInfo) {
-
+    public Result searchActions(String inputText, String packageName, String baseScreenTitle,
+                                String deviceInfoString, String appVersion, String versionCode) {
         final boolean fuzzySearch = true;
         final String subTitle = Utils.EMPTY_STRING;
+        DeviceInfo deviceInfo = getDeviceInfoFromInputString(deviceInfoString);
+        if (deviceInfo == null) {
+            return badRequest(Utils.createResponse("Invalid input", false));
+        }
+
         ActionResponse actionResponse = actionResponseHelper.createActionResponse(
                 inputText,
                 packageName,
                 baseScreenTitle,
                 subTitle,
                 deviceInfo,
+                appVersion,
+                versionCode,
                 DEFAULT_MAX_RESULTS_FOR_ACTION_SEARCH,
                 fuzzySearch);
         ObjectMapper mapper = new ObjectMapper();
@@ -46,11 +56,15 @@ public class ActionController extends Controller {
         return ok(jsonData);
     }
 
-    public Result searchSettingActions(String inputText, String deviceInfo) {
+    public Result searchSettingActions(String inputText, String deviceInfoString) {
         final String SETTINGS_TITLE = "Settings";
         final String SETTINGS_PACKAGE_NAME = "com.android.settings";
         final String SETTINGS_SUBTITLE = "Wireless & networks";
-        final boolean FUZZY_SEARCH = false;
+        final boolean FUZZY_SEARCH = true;
+        DeviceInfo deviceInfo = getDeviceInfoFromInputString(deviceInfoString);
+        if (deviceInfo == null) {
+            return badRequest(Utils.createResponse("Invalid input", false));
+        }
         ActionResponse actionResponse = actionResponseHelper.createActionResponse(
                 inputText,
                 SETTINGS_PACKAGE_NAME,
@@ -63,5 +77,21 @@ public class ActionController extends Controller {
         JsonNode jsonData = mapper.convertValue(actionResponse, JsonNode.class);
         return ok(jsonData);
     }
+
+    private static DeviceInfo getDeviceInfoFromInputString(String deviceInfoString) {
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode deviceInfoObj = null;
+        try {
+            deviceInfoObj = mapper.readTree(deviceInfoString);
+        } catch (IOException e) {
+            Utils.printDebug("Exception while parsing device info " + e.toString());
+        }
+
+        if (deviceInfoObj == null) {
+            return null;
+        }
+        return Json.fromJson(deviceInfoObj, DeviceInfo.class);
+    }
+
 
 }

@@ -27,8 +27,8 @@ public class ViewUtils {
     private static final String NULL_STRING = "null";
 
     //On/off
-    static final String ON_TEXT = "on";
-    static final String OFF_TEXT = "off";
+    public static final String ON_TEXT = "on";
+    public static final String OFF_TEXT = "off";
 
     //Texts
     public static final String SWITCH_TEXT = "SWITCH_ON_OFF";

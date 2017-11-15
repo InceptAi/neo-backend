@@ -16,7 +16,7 @@ public class UIScreen {
     private final String packageName;
     private final String title;
     private final String subTitle;
-    private final HashMap<String, String> deviceInfo;
+    private final MatchingInfo matchingInfo;
     private String parentScreenId = Utils.EMPTY_STRING;
     private HashMap<String, UIStep> nextStepToScreens = new HashMap<>();
     private HashMap<String, UIStep> lastStepToCurrentScreen = new HashMap<>();
@@ -55,7 +55,7 @@ public class UIScreen {
     }
 
     public String getId() {
-        //return getScreenId(packageName, title, subTitle, screenType, deviceInfo.toString());
+        //return getScreenId(packageName, title, subTitle, screenType, matchingInfo.toString());
         return id;
     }
 
@@ -73,14 +73,14 @@ public class UIScreen {
         this.packageName = Utils.EMPTY_STRING;
         this.title = Utils.EMPTY_STRING;
         this.subTitle = Utils.EMPTY_STRING;
-        this.deviceInfo = new HashMap<>();
+        this.matchingInfo = new MatchingInfo();
         this.lastUpdatedAtMs = 0;
     }
 
     public UIScreen(String id, String parentScreenId, String screenType, String packageName,
                     String title, String subTitle, HashMap<String, UIStep> nextStepToScreens,
                     HashMap<String, UIStep> lastStepToCurrentScreen, HashMap<String, UIElement> uiElements,
-                    HashMap<String, String> deviceInfo, HashMap<String, UIScreen> childScreens,
+                    MatchingInfo matchingInfo, HashMap<String, UIScreen> childScreens,
                     HashMap<String, SemanticAction> semanticActions, long lastUpdatedAtMs) {
         this.parentScreenId = parentScreenId;
         this.screenType = screenType;
@@ -90,20 +90,20 @@ public class UIScreen {
         this.nextStepToScreens = nextStepToScreens;
         this.lastStepToCurrentScreen = lastStepToCurrentScreen;
         this.uiElements = uiElements;
-        this.deviceInfo = deviceInfo;
+        this.matchingInfo = matchingInfo;
         this.childScreens = childScreens;
         this.semanticActions = semanticActions;
-        this.id = getScreenId(packageName, title, subTitle, screenType, deviceInfo.toString());
+        this.id = getScreenId(packageName, title, subTitle, screenType, matchingInfo.toString());
         this.lastUpdatedAtMs = lastUpdatedAtMs;
     }
 
-    public UIScreen(String title, String subTitle, String packageName, String screenType, HashMap<String, String> deviceInfo) {
+    public UIScreen(String title, String subTitle, String packageName, String screenType, MatchingInfo matchingInfo) {
         this.screenType = screenType;
         this.packageName = packageName;
         this.title = title;
         this.subTitle = subTitle;
-        this.deviceInfo = deviceInfo;
-        this.id = getScreenId(packageName, title, subTitle, screenType, deviceInfo.toString());
+        this.matchingInfo = matchingInfo;
+        this.id = getScreenId(packageName, title, subTitle, screenType, matchingInfo.toString());
         this.lastUpdatedAtMs = System.currentTimeMillis();
         //Other initializations
         this.uiElements = new HashMap<>();
@@ -165,8 +165,8 @@ public class UIScreen {
         return title;
     }
 
-    public HashMap<String, String> getDeviceInfo() {
-        return deviceInfo;
+    public MatchingInfo getMatchingInfo() {
+        return matchingInfo;
     }
 
     public HashMap<String, List<UIElement>> findElementsInScreenHierarchical(String className,
@@ -363,12 +363,12 @@ public class UIScreen {
         if (!packageName.equals(uiScreen.packageName)) return false;
         if (!title.equals(uiScreen.title)) return false;
         if (!subTitle.equals(uiScreen.subTitle)) return false;
-        return deviceInfo.equals(uiScreen.deviceInfo);
+        return matchingInfo.equals(uiScreen.matchingInfo);
     }
 
     @Override
     public int hashCode() {
-        return getScreenHash(packageName, title, subTitle, screenType, deviceInfo.toString());
+        return getScreenHash(packageName, title, subTitle, screenType, matchingInfo.toString());
     }
 
     public class UIElementTuple {
@@ -398,17 +398,17 @@ public class UIScreen {
         }
     }
 
-    private static int getScreenHash(String packageName, String title, String subTitle, String screenType, String deviceInfo) {
+    private static int getScreenHash(String packageName, String title, String subTitle, String screenType, String matchingInfo) {
         int result = packageName.toLowerCase().hashCode();
         result = 31 * result + Utils.sanitizeText(title).hashCode();
         result = 31 * result + Utils.sanitizeText(subTitle).hashCode();
         result = 31 * result + Utils.sanitizeText(screenType).hashCode();
-        result = 31 * result + Utils.sanitizeText(deviceInfo).hashCode();
+        result = 31 * result + Utils.sanitizeText(matchingInfo).hashCode();
         return result;
     }
 
-    public static String getScreenId(String packageName, String title, String subTitle, String screenType, String deviceInfo) {
-        return String.valueOf(getScreenHash(packageName, title, subTitle, screenType, deviceInfo));
+    public static String getScreenId(String packageName, String title, String subTitle, String screenType, String matchingInfo) {
+        return String.valueOf(getScreenHash(packageName, title, subTitle, screenType, matchingInfo));
     }
 
 }
