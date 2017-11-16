@@ -225,7 +225,7 @@ public class UIScreen {
             //For each element, find the first TextView with title
             UIElement titleTextViewElement = UIElement.findFirstTitleTextViewInElement(candidateElement);
             if (titleTextViewElement != null) {
-                double matchMetric = simpleTextInterpreter.getMatchMetric(textToMatch, titleTextViewElement.getPrimaryText());
+                double matchMetric = simpleTextInterpreter.getMatchMetric(textToMatch, titleTextViewElement.getPrimaryText(), MIN_MATCHING_METRIC);
                 elementScoreHashMap.put(candidateElement.getId(), matchMetric);
                 candidateElementHashMap.put(candidateElement.getId(), candidateElement);
                 if (matchMetric > bestMatchMetric) {

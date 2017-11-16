@@ -26,7 +26,7 @@ public class SimpleTextInterpreter implements TextInterpreter {
     }
 
     @Override
-    public double getMatchMetric(String inputText, String referenceText) {
+    public double getMatchMetric(String inputText, String referenceText, double minThresholdForMatching) {
         //Break input text into words, and see how many words occur in reference text
         if (Utils.nullOrEmpty(inputText) || Utils.nullOrEmpty(referenceText)) {
             return 0;
@@ -55,6 +55,11 @@ public class SimpleTextInterpreter implements TextInterpreter {
         double overallMatch = (double)numMatches / (inputWords.size() + referenceSet.size());
         //Normalize -- max value can be 0.5, min is 0
         return overallMatch * 2.0;
+    }
+
+    @Override
+    public double getMatchMetric(String inputText, String referenceText) {
+        return getMatchMetric(inputText, referenceText, minMatchPercentage);
     }
 
     private String getPluralForm(String word) {

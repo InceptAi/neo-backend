@@ -13,6 +13,8 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.*;
 
+import static config.BackendConfiguration.MIN_MATCH_PERCENTAGE_FOR_FUZZY_SCREEN_TITLE_MATCH;
+
 @Singleton
 public class UIScreenManager {
     private Map<String, UIScreen> uiScreenMap;
@@ -231,7 +233,7 @@ public class UIScreenManager {
         double bestMetric = 0;
         for (String screenId: screenIdSet) {
             UIScreen uiScreen = uiScreenMap.get(screenId);
-            double totalMetric = textInterpreter.getMatchMetric(keyWords, uiScreen.getTitle());
+            double totalMetric = textInterpreter.getMatchMetric(keyWords, uiScreen.getTitle(), MIN_MATCH_PERCENTAGE_FOR_FUZZY_SCREEN_TITLE_MATCH);
             //double matchMetric = textInterpreter.getMatchMetric(keyWords, uiScreen.getTitle());
             //double navigationMetric = findBestNavigationStepMetricByKeyWords(keyWords, uiScreen);
             //double totalMetric = navigationMetric >= 0 ? (navigationMetric + matchMetric) / 2 : matchMetric;
