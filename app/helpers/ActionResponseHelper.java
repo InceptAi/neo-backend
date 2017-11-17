@@ -45,7 +45,7 @@ public class ActionResponseHelper {
         List<ActionDetails> actionDetailsList = new ArrayList<>();
         //find top actions first
         Map<String, SemanticActionMatchingTextAndScore> topMatchingActions;
-        if (matchingInfo.isEmpty() && util.Utils.nullOrEmpty(inputText)) {
+        if (matchingInfo.checkIfEmpty() && util.Utils.nullOrEmpty(inputText)) {
             //return all semantic actions
             topMatchingActions = semanticActionStore.returnAllActionsWithScores();
         } else {

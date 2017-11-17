@@ -139,7 +139,7 @@ public class MatchingInfo {
         return result;
     }
 
-    public boolean isSystemPackage() {
+    public boolean checkIfSystemPackage() {
         if (Utils.nullOrEmpty(appVersion) || Utils.nullOrEmpty(versionCode) ||
                 Utils.nullOrEmpty(release) || Utils.nullOrEmpty(phoneSdk)) {
             return false;
@@ -147,7 +147,7 @@ public class MatchingInfo {
         return appVersion.equalsIgnoreCase(release) && versionCode.equalsIgnoreCase(phoneSdk);
     }
 
-    public boolean isEmpty() {
+    public boolean checkIfEmpty() {
         return appVersion.isEmpty() &&
                 versionCode.isEmpty() &&
                 phoneManufacturer.isEmpty() &&

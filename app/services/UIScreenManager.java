@@ -226,7 +226,7 @@ public class UIScreenManager {
                     uiScreen.getMatchingInfo(),
                     matchingInfo,
                     true,
-                    matchingInfo.isSystemPackage());
+                    matchingInfo.checkIfSystemPackage());
             totalMetric = totalMetric * matchingScore;
             //double matchMetric = textInterpreter.getMatchMetric(keyWords, uiScreen.getTitle());
             //double navigationMetric = findBestNavigationStepMetricByKeyWords(keyWords, uiScreen);

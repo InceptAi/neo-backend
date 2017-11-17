@@ -38,7 +38,7 @@ public class Utils {
         return target == null || target.isEmpty() || target.equals("null");
     }
 
-    private static List<String> splitSentenceToWords(String sentence) {
+    public static List<String> splitSentenceToWords(String sentence) {
         if (nullOrEmpty(sentence)) {
             return new ArrayList<>();
         }
@@ -111,12 +111,12 @@ public class Utils {
         Set<String> keywordListToReturn = new HashSet<>();
         List<String> inputWords = Arrays.asList(inputText.split(" "));
         for (String word: inputWords) {
-            if (Utils.nullOrEmpty(word) || word.equals(ViewUtils.SWITCH_TEXT) || word.equals(ViewUtils.CHECK_BOX_TEXT)) {
+            if (Utils.nullOrEmpty(word) || word.equalsIgnoreCase(ViewUtils.SWITCH_TEXT) || word.equalsIgnoreCase(ViewUtils.CHECK_BOX_TEXT)) {
                 continue; //We don't need to match the switch text specifically -- since we will be matching
                 // other keywords for context
             }
 
-            if (word.equals(ViewUtils.ON_OFF_TEXT)) {
+            if (word.equalsIgnoreCase(ViewUtils.ON_OFF_TEXT)) {
                 word = ViewUtils.ON_OFF_KEYWORD_REPLACEMENT;
             }
 

@@ -46,7 +46,7 @@ public class FuzzySemanticActionStore implements SemanticActionStore {
             int maxResults) {
         //TODO: handle cases where package name changes even within settings -- like cellular broadcast settings
         //TODO: In this scenario we don't know the exact package name
-        if (!matchingInfo.isSystemPackage()) {
+        if (!matchingInfo.checkIfSystemPackage()) {
             return searchActionsForPackageNameFuzzy(inputText, packageName, matchingInfo, textInterpreter, maxResults);
         }
 
@@ -80,7 +80,7 @@ public class FuzzySemanticActionStore implements SemanticActionStore {
         }
         for (SemanticAction semanticAction: uiScreen.getSemanticActions().values()) {
             addSemanticAction(semanticAction);
-            if (uiScreen.getMatchingInfo().isSystemPackage()) {
+            if (uiScreen.getMatchingInfo().checkIfSystemPackage()) {
                 systemPackageNameList.add(uiScreen.getPackageName());
             }
         }
@@ -104,7 +104,7 @@ public class FuzzySemanticActionStore implements SemanticActionStore {
             TextInterpreter textInterpreter,
             int maxResults) {
         List<SemanticAction> semanticActionList = packageNameToSemanticActionsMap.get(packageName);
-        if (semanticActionList == null || semanticActionList.isEmpty() && !matchingInfo.isSystemPackage()) {
+        if (semanticActionList == null || semanticActionList.isEmpty() && !matchingInfo.checkIfSystemPackage()) {
             //We have nothing for this package period -- return
             return new HashMap<>();
         }
@@ -137,7 +137,7 @@ public class FuzzySemanticActionStore implements SemanticActionStore {
                         semanticAction.getMatchingInfo(),
                         inputMatchingInfo,
                         true,
-                        inputMatchingInfo.isSystemPackage());
+                        inputMatchingInfo.checkIfSystemPackage());
                 bestMatchMetric = bestMatchMetric * matchingScore;
                 if (bestMatchMetric > 0) {
                     semanticActionIdToBestMatchingString.put(semanticAction.fetchSemanticActionId(), bestMatchingString);

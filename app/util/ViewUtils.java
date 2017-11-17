@@ -2,7 +2,9 @@ package util;
 
 import com.inceptai.neopojos.RenderingView;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class ViewUtils {
@@ -143,7 +145,32 @@ public class ViewUtils {
             default:
                 break;
         }
-        return textToReturn;
+        return replacePII(textToReturn);
+    }
+
+    public static String replacePII(String inputText) {
+        String replacedString = replaceEmailsWithPlaceHolders(inputText);
+        replacedString = replaceNumbersWithPlaceHolders(replacedString);
+        return replacedString;
+    }
+
+    public static String replaceNumbersWithPlaceHolders(String inputText) {
+        final String NUMBER_REPLACEMENT = "NUMBER";
+        return inputText.replaceAll("\\d+\\.?\\d*", NUMBER_REPLACEMENT);
+    }
+
+    public static String replaceEmailsWithPlaceHolders(String inputText) {
+        final String EMAIL_REPLACEMENT = "EMAIL";
+        List<String> replacedWords = new ArrayList<>();
+        List<String> words = Utils.splitSentenceToWords(inputText);
+        for (String inputWord: words) {
+            if (inputWord.contains("@")) {
+                replacedWords.add(EMAIL_REPLACEMENT);
+            } else {
+                replacedWords.add(inputWord);
+            }
+        }
+        return Utils.combineWordsToSentence(replacedWords);
     }
 
     public static boolean isTemplateText(String text) {
