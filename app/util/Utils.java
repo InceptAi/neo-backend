@@ -2,6 +2,7 @@ package util;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import models.MatchingInfo;
 import play.libs.Json;
 
 import java.util.*;
@@ -174,5 +175,42 @@ public class Utils {
         return input;
     }
 
+    public static double getMatchingScore(MatchingInfo matchingInfo1, MatchingInfo matchingInfo2,
+                                   boolean fuzzyMatch, boolean prioritizeDevice) {
+        final double MAX_MATCHING_SCORE = 10;
 
+        if (matchingInfo1 == null || matchingInfo2 == null) {
+            return 0;
+        }
+
+        if (matchingInfo1.equals(matchingInfo2)) {
+            return MAX_MATCHING_SCORE;
+        }
+
+        if (!fuzzyMatch) {
+            return 0;
+        }
+
+        double matchingScore = 1;
+
+        if (prioritizeDevice) {
+            if (matchingInfo1.getPhoneManufacturer().equalsIgnoreCase(matchingInfo2.getPhoneManufacturer())) {
+                matchingScore += 4.0;
+            }
+            if (matchingInfo1.getRelease().equalsIgnoreCase(matchingInfo2.getRelease())) {
+                matchingScore += 3.0;
+            }
+            if (matchingInfo1.getPhoneModel().equalsIgnoreCase(matchingInfo2.getPhoneModel())) {
+                matchingScore += 2.0;
+            }
+        } else {
+            if (matchingInfo1.getAppVersion().equalsIgnoreCase(matchingInfo2.getAppVersion())) {
+                matchingScore += 7.0;
+            }
+            if (matchingInfo1.getVersionCode().equalsIgnoreCase(matchingInfo2.getVersionCode())) {
+                matchingScore += 2.0;
+            }
+        }
+        return matchingScore;
+    }
 }

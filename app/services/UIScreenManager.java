@@ -195,33 +195,24 @@ public class UIScreenManager {
         }
     }
 
-    public UIScreen findTopMatchingScreenIdByKeywordAndScreenType(String keyWords, String packageName, String screenType) {
+    public UIScreen fuzzyFindTopMatchingScreenId(String keyWords, String packageName,
+                                                 String screenType, MatchingInfo matchingInfo) {
         final double MAX_GAP_FOR_CONFIDENCE = 0.2;
-        Map<String, Double> confidenceScores = findScreenIdsByKeywords(keyWords, packageName, MAX_GAP_FOR_CONFIDENCE);
-//        if (confidenceScores.size() != 1) {
-//            return null;
-//        }
-        //Search in all screens navigational elements for this match
+        Map<String, Double> confidenceScores = fuzzyFindScreenIds(keyWords, packageName, matchingInfo, MAX_GAP_FOR_CONFIDENCE);
         for (HashMap.Entry<String, Double> entry : confidenceScores.entrySet()) {
             UIScreen matchingScreen = uiScreenMap.get(entry.getKey());
-            if (matchingScreen != null && matchingScreen.getScreenType().equalsIgnoreCase(screenType)) {
+//            if (matchingScreen != null && matchingScreen.getScreenType().equalsIgnoreCase(screenType)) {
+//                return matchingScreen;
+//            }
+            if (matchingScreen != null) {
                 return matchingScreen;
             }
         }
         return null;
     }
 
-    public UIScreen findTopMatchingScreenIdByKeyword(String keyWords, String packageName) {
-        final double MAX_GAP_FOR_CONFIDENCE = 0.2;
-        Map<String, Double> confidenceScores = findScreenIdsByKeywords(keyWords, packageName, MAX_GAP_FOR_CONFIDENCE);
-        if (confidenceScores.size() != 1) {
-            return null;
-        }
-        String bestMatchingScreenId = (String)confidenceScores.keySet().toArray()[0];
-        return uiScreenMap.get(bestMatchingScreenId);
-    }
-
-    private LinkedHashMap<String, Double> findScreenIdsByKeywords(String keyWords, String packageName, double maxGapFromBest) {
+    private LinkedHashMap<String, Double> fuzzyFindScreenIds(String keyWords, String packageName,
+                                                             MatchingInfo matchingInfo, double maxGapFromBest) {
         LinkedHashMap<String, Double> screenIdsToReturn = new LinkedHashMap<>();
         HashMap<String, Double> screenIdToConfidenceHashMap = new HashMap<>();
         //Search in all screens for this match in a given packageName
@@ -234,6 +225,12 @@ public class UIScreenManager {
         for (String screenId: screenIdSet) {
             UIScreen uiScreen = uiScreenMap.get(screenId);
             double totalMetric = textInterpreter.getMatchMetric(keyWords, uiScreen.getTitle(), MIN_MATCH_PERCENTAGE_FOR_FUZZY_SCREEN_TITLE_MATCH);
+            double matchingScore = Utils.getMatchingScore(
+                    uiScreen.getMatchingInfo(),
+                    matchingInfo,
+                    true,
+                    matchingInfo.isSystemPackage());
+            totalMetric = totalMetric * matchingScore;
             //double matchMetric = textInterpreter.getMatchMetric(keyWords, uiScreen.getTitle());
             //double navigationMetric = findBestNavigationStepMetricByKeyWords(keyWords, uiScreen);
             //double totalMetric = navigationMetric >= 0 ? (navigationMetric + matchMetric) / 2 : matchMetric;

@@ -54,24 +54,25 @@ public class ActionResponseHelper {
         baseScreenSubTitle = util.Utils.sanitizeText(baseScreenSubTitle);
         MatchingInfo matchingInfo = new MatchingInfo(deviceInfo, appVersion, versionCode);
         //Make sure starting screen is not null
-        UIScreen startingScreen;
-        if (fuzzyScreenSearch) {
-            startingScreen = uiScreenManager.findTopMatchingScreenIdByKeywordAndScreenType(
-                    baseScreenTitle,
-                    packageName,
-                    CrawlingInput.FULL_SCREEN_MODE);
-        } else {
-            startingScreen = uiScreenManager.getScreen(
-                    packageName,
-                    baseScreenTitle,
-                    baseScreenSubTitle,
-                    CrawlingInput.FULL_SCREEN_MODE,
-                    matchingInfo);
-        }
-
-        if (startingScreen == null) {
-            return new ActionResponse();
-        }
+//        UIScreen startingScreen;
+//        if (fuzzyScreenSearch) {
+//            startingScreen = uiScreenManager.fuzzyFindTopMatchingScreenId(
+//                    baseScreenTitle,
+//                    packageName,
+//                    CrawlingInput.FULL_SCREEN_MODE,
+//                    matchingInfo);
+//        } else {
+//            startingScreen = uiScreenManager.getScreen(
+//                    packageName,
+//                    baseScreenTitle,
+//                    baseScreenSubTitle,
+//                    CrawlingInput.FULL_SCREEN_MODE,
+//                    matchingInfo);
+//        }
+//
+//        if (startingScreen == null) {
+//            return new ActionResponse();
+//        }
         List<ActionDetails> actionDetailsList = new ArrayList<>();
         //find top actions first
         Map<String, SemanticActionMatchingTextAndScore> topMatchingActions;
@@ -86,8 +87,14 @@ public class ActionResponseHelper {
             String actionId = entry.getKey();
             SemanticActionMatchingTextAndScore descriptionAndScore = entry.getValue();
             SemanticAction semanticAction = semanticActionStore.getAction(actionId);
+            MatchingInfo semanticActionMatchingInfo = semanticAction.getMatchingInfo();
             UIScreen dstScreen = uiScreenManager.getScreen(semanticAction.getUiScreenId());
-            UIScreen srcScreen = uiScreenManager.getScreen(startingScreen.getId());
+            UIScreen srcScreen = uiScreenManager.fuzzyFindTopMatchingScreenId(
+                    baseScreenTitle,
+                    packageName,
+                    CrawlingInput.FULL_SCREEN_MODE,
+                    semanticActionMatchingInfo);
+            //UIScreen srcScreen = uiScreenManager.getScreen(startingScreen.getId());
             if (srcScreen == null || dstScreen == null) {
                 continue;
             }
