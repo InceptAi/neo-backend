@@ -28,22 +28,10 @@ public class ActionResponseHelper {
         this.pathFinder = pathFinder;
     }
 
-
     //Take input the semantic ids and best matching string and create action response
     public ActionResponse createActionResponse(String inputText, String packageName,
                                                String baseScreenTitle, String baseScreenSubTitle,
-                                               DeviceInfo deviceInfo,
-                                               int maxResults,
-                                               boolean fuzzyScreenSearch) {
-        return createActionResponse(inputText, packageName, baseScreenTitle,
-                baseScreenSubTitle, deviceInfo,
-                util.Utils.EMPTY_STRING, util.Utils.EMPTY_STRING,
-                maxResults, fuzzyScreenSearch);
-
-    }
-    //Take input the semantic ids and best matching string and create action response
-    public ActionResponse createActionResponse(String inputText, String packageName,
-                                               String baseScreenTitle, String baseScreenSubTitle,
+                                               String baseScreenType,
                                                DeviceInfo deviceInfo,
                                                String appVersion, String versionCode,
                                                int maxResults,
@@ -54,25 +42,6 @@ public class ActionResponseHelper {
         baseScreenSubTitle = util.Utils.sanitizeText(baseScreenSubTitle);
         MatchingInfo matchingInfo = new MatchingInfo(deviceInfo, appVersion, versionCode);
         //Make sure starting screen is not null
-//        UIScreen startingScreen;
-//        if (fuzzyScreenSearch) {
-//            startingScreen = uiScreenManager.fuzzyFindTopMatchingScreenId(
-//                    baseScreenTitle,
-//                    packageName,
-//                    CrawlingInput.FULL_SCREEN_MODE,
-//                    matchingInfo);
-//        } else {
-//            startingScreen = uiScreenManager.getScreen(
-//                    packageName,
-//                    baseScreenTitle,
-//                    baseScreenSubTitle,
-//                    CrawlingInput.FULL_SCREEN_MODE,
-//                    matchingInfo);
-//        }
-//
-//        if (startingScreen == null) {
-//            return new ActionResponse();
-//        }
         List<ActionDetails> actionDetailsList = new ArrayList<>();
         //find top actions first
         Map<String, SemanticActionMatchingTextAndScore> topMatchingActions;
@@ -92,21 +61,25 @@ public class ActionResponseHelper {
             UIScreen srcScreen = uiScreenManager.fuzzyFindTopMatchingScreenId(
                     baseScreenTitle,
                     packageName,
-                    CrawlingInput.FULL_SCREEN_MODE,
+                    baseScreenType,
                     semanticActionMatchingInfo);
-            //UIScreen srcScreen = uiScreenManager.getScreen(startingScreen.getId());
             if (srcScreen == null || dstScreen == null) {
                 continue;
             }
             //TODO: semantic action element id may not be top level id -- so handle it
             UIScreen.UIElementTuple uiElementTuple = dstScreen.findElementAndTopLevelParentById(semanticAction.getUiElementId());
-            //UIElement uiElement = dstScreen.getUiElements().get(semanticAction.getUiElementId());
             if (uiElementTuple.getTopLevelParent() == null || uiElementTuple.getUiElement() == null) {
                 continue;
             }
             UIPath navigationPathBetweenScreens = pathFinder.findPathBetweenScreens(srcScreen, dstScreen);
             //Create navigation list
             List<NavigationIdentifier> navigationIdentifierList = getNavigationPathForClient(navigationPathBetweenScreens);
+
+            if (navigationIdentifierList == null) {
+                //Can't continue with this action since no path available
+                continue;
+            }
+
             //Last step
             ScreenIdentifier dstScreenIdentifier = new ScreenIdentifier(
                     dstScreen.getTitle(),

@@ -8,6 +8,7 @@ import org.jgrapht.DirectedGraph;
 import org.jgrapht.GraphPath;
 import org.jgrapht.alg.shortestpath.DijkstraShortestPath;
 import storage.NavigationGraphStore;
+import util.Utils;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -24,12 +25,26 @@ public class ShortestPathFinder implements PathFinder {
 
     @Override
     public UIPath findPathBetweenScreens(UIScreen srcScreen, UIScreen dstScreen) {
-        DirectedGraph<String, UIStep> screenGraph = navigationGraphStore.getScreenGraph();
-        GraphPath<String, UIStep> shortestPath =
-                DijkstraShortestPath.findPathBetween(screenGraph, srcScreen.getId(), dstScreen.getId());
-        if (shortestPath == null) {
+        if (srcScreen == null || dstScreen == null) {
+            return null;
+        }
+
+        if (srcScreen.equals(dstScreen)) {
             return new UIPath();
         }
+
+        DirectedGraph<String, UIStep> screenGraph = navigationGraphStore.getScreenGraph();
+        GraphPath<String, UIStep> shortestPath = null;
+        try {
+            shortestPath = DijkstraShortestPath.findPathBetween(screenGraph, srcScreen.getId(), dstScreen.getId());
+        } catch (IllegalArgumentException e) {
+            Utils.printDebug("Exception in shortest path computation " + e.toString());
+        }
+
+        if (shortestPath == null) {
+            return null;
+        }
+
         List<UIStep> uiStepList = shortestPath.getEdgeList();
         return new UIPath(uiStepList);
     }

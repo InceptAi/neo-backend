@@ -10,7 +10,9 @@ import java.util.*;
 public class Utils {
     public static final String EMPTY_STRING = "";
     private static final String PRINT_MODE = "DEBUG";
-
+    public static final String SETTINGS_TITLE = "Settings";
+    public static final String SETTINGS_PACKAGE_NAME = "com.android.settings";
+    public static final String SETTINGS_SUBTITLE = "Wireless & networks";
     public static ObjectNode createResponse(Object response, boolean ok) {
         ObjectNode result = Json.newObject();
         result.put("isSuccessfull", ok);

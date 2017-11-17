@@ -71,7 +71,7 @@ public class UIScreenManager {
 
     public UIScreen addScreenAdvanced(UIScreen uiScreen) {
         String screenId = uiScreen.getId();
-            UIScreen screenInMap = uiScreenMap.get(screenId);
+        UIScreen screenInMap = uiScreenMap.get(screenId);
         if (screenInMap == null) {
             screenInMap = uiScreen;
             uiScreenMap.put(screenId, uiScreen);
@@ -90,7 +90,7 @@ public class UIScreenManager {
                 uiScreen.getScreenType(),
                 uiScreen.getMatchingInfo().toString());
         UIScreen emptySubtitleScreen = uiScreenMap.get(screenIdWithEmptySubtitle);
-        if (emptySubtitleScreen != null) {
+        if (emptySubtitleScreen != null && !emptySubtitleScreen.getId().equalsIgnoreCase(screenInMap.getId())) {
             //Remove the empty subtitle screen
             screenInMap.mergeScreen(emptySubtitleScreen, false);
             uiScreenMap.remove(emptySubtitleScreen.getId());
@@ -201,10 +201,7 @@ public class UIScreenManager {
         Map<String, Double> confidenceScores = fuzzyFindScreenIds(keyWords, packageName, matchingInfo, MAX_GAP_FOR_CONFIDENCE);
         for (HashMap.Entry<String, Double> entry : confidenceScores.entrySet()) {
             UIScreen matchingScreen = uiScreenMap.get(entry.getKey());
-//            if (matchingScreen != null && matchingScreen.getScreenType().equalsIgnoreCase(screenType)) {
-//                return matchingScreen;
-//            }
-            if (matchingScreen != null) {
+            if (matchingScreen != null && matchingScreen.getScreenType().equalsIgnoreCase(screenType)) {
                 return matchingScreen;
             }
         }

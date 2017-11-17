@@ -16,6 +16,7 @@ import java.util.*;
 
 import static com.inceptai.neopojos.CrawlingInput.FULL_SCREEN_MODE;
 import static com.inceptai.neopojos.CrawlingInput.PARTIAL_SCREEN_MODE;
+import static util.Utils.SETTINGS_PACKAGE_NAME;
 
 @Singleton
 public class UIScreenParser {
@@ -34,10 +35,13 @@ public class UIScreenParser {
         }
 
         String sanitizedSubtitle = getSanitizedSubTitle(crawlingInput.getRootSubTitle());
+        // TODO: Remove hack to force no subtitle for accessibility -- could cause issues while scree matching.
+        sanitizedSubtitle = isSubtitlePlaceholderText(sanitizedSubtitle) ||
+                isAccessibilityScreen(crawlingInput) ? Utils.EMPTY_STRING : sanitizedSubtitle;
         MatchingInfo matchingInfo = createMatchingInfoFromCrawlingInput(crawlingInput);
         UIScreen screenToBeCreated = new UIScreen(
                 crawlingInput.getRootTitle(),
-                !isSubtitlePlaceholderText(sanitizedSubtitle) ? sanitizedSubtitle : Utils.EMPTY_STRING,
+                sanitizedSubtitle,
                 crawlingInput.getRootPackageName(),
                 crawlingInput.getCurrentScreenType(),
                 matchingInfo);
@@ -323,6 +327,12 @@ public class UIScreenParser {
         } else {
             return subtitle;
         }
+    }
+
+    private static boolean isAccessibilityScreen(CrawlingInput crawlingInput) {
+        final String ACCESSIBILITY_SCREEN_TITLE = "Accessibility";
+        return (crawlingInput.getRootTitle().equalsIgnoreCase(ACCESSIBILITY_SCREEN_TITLE) &&
+                crawlingInput.getRootPackageName().equalsIgnoreCase(SETTINGS_PACKAGE_NAME));
     }
 
     private static boolean isSubtitlePlaceholderText(String subTitle) {

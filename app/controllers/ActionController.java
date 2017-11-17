@@ -3,6 +3,7 @@ package controllers;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.inceptai.neopojos.ActionResponse;
+import com.inceptai.neopojos.CrawlingInput;
 import com.inceptai.neopojos.DeviceInfo;
 import models.SemanticAction;
 import play.libs.Json;
@@ -17,6 +18,9 @@ import java.io.IOException;
 import java.util.Set;
 
 import static config.BackendConfiguration.DEFAULT_MAX_RESULTS_FOR_ACTION_SEARCH;
+import static util.Utils.SETTINGS_PACKAGE_NAME;
+import static util.Utils.SETTINGS_SUBTITLE;
+import static util.Utils.SETTINGS_TITLE;
 
 @SuppressWarnings("unused")
 public class ActionController extends Controller {
@@ -33,7 +37,8 @@ public class ActionController extends Controller {
     }
 
     public Result searchActions(String inputText, String packageName, String baseScreenTitle,
-                                String deviceInfoString, String appVersion, String versionCode) {
+                                String baseScreenType, String deviceInfoString, String appVersion,
+                                String versionCode) {
         final boolean fuzzySearch = true;
         final String subTitle = Utils.EMPTY_STRING;
         DeviceInfo deviceInfo = getDeviceInfoFromInputString(deviceInfoString);
@@ -46,6 +51,7 @@ public class ActionController extends Controller {
                 packageName,
                 baseScreenTitle,
                 subTitle,
+                baseScreenType,
                 deviceInfo,
                 appVersion,
                 versionCode,
@@ -57,9 +63,7 @@ public class ActionController extends Controller {
     }
 
     public Result searchSettingActions(String inputText, String deviceInfoString) {
-        final String SETTINGS_TITLE = "Settings";
-        final String SETTINGS_PACKAGE_NAME = "com.android.settings";
-        final String SETTINGS_SUBTITLE = "Wireless & networks";
+
         final boolean FUZZY_SEARCH = true;
         DeviceInfo deviceInfo = getDeviceInfoFromInputString(deviceInfoString);
         if (deviceInfo == null) {
@@ -70,7 +74,10 @@ public class ActionController extends Controller {
                 SETTINGS_PACKAGE_NAME,
                 SETTINGS_TITLE,
                 SETTINGS_SUBTITLE,
+                CrawlingInput.FULL_SCREEN_MODE,
                 deviceInfo,
+                deviceInfo.getRelease(),
+                deviceInfo.getSdk(),
                 DEFAULT_MAX_RESULTS_FOR_ACTION_SEARCH,
                 FUZZY_SEARCH);
         ObjectMapper mapper = new ObjectMapper();
