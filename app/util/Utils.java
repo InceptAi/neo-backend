@@ -111,7 +111,11 @@ public class Utils {
         Set<String> keywordListToReturn = new HashSet<>();
         List<String> inputWords = Arrays.asList(inputText.split(" "));
         for (String word: inputWords) {
-            if (Utils.nullOrEmpty(word) || word.equalsIgnoreCase(ViewUtils.SWITCH_TEXT) || word.equalsIgnoreCase(ViewUtils.CHECK_BOX_TEXT)) {
+            if (Utils.nullOrEmpty(word) ||
+                    word.equalsIgnoreCase(ViewUtils.SWITCH_TEXT) ||
+                    word.equalsIgnoreCase(ViewUtils.CHECK_BOX_TEXT) ||
+                    word.equalsIgnoreCase(ViewUtils.NUMBER_REPLACEMENT) ||
+                    word.equalsIgnoreCase(ViewUtils.EMAIL_REPLACEMENT)) {
                 continue; //We don't need to match the switch text specifically -- since we will be matching
                 // other keywords for context
             }

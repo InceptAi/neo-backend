@@ -308,6 +308,7 @@ public class UIScreen {
                 topLevelElement = uiElement;
                 actualElement = uiElement.findElementById(elementId);
                 if (actualElement != null) {
+                    //breaks on the first found element
                     break;
                 }
             }
@@ -318,6 +319,27 @@ public class UIScreen {
         return new UIElementTuple(actualElement, topLevelElement);
     }
 
+    //TODO: Make this recursive search
+    public UIElementTuple findElementAndTopLevelParentById(String elementId, String immediateParentId) {
+        UIElement topLevelElement = uiElements.get(elementId);
+        if (topLevelElement != null && Utils.nullOrEmpty(immediateParentId)) {
+            return new UIElementTuple(topLevelElement, topLevelElement);
+        }
+
+        UIElement actualElement;
+        //Search for child elements
+        for (UIElement uiElement: uiElements.values()) {
+            topLevelElement = uiElement;
+
+            if (Utils.nullOrEmpty(immediateParentId) || uiElement.getId().equalsIgnoreCase(immediateParentId)) {
+                actualElement = uiElement.findElementById(elementId);
+                if (actualElement != null) {
+                    return new UIElementTuple(actualElement, topLevelElement);
+                }
+            }
+        }
+        return null;
+    }
 
 
     public boolean mergeScreen(UIScreen uiScreen, boolean checkEquality) {

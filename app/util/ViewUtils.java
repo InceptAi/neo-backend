@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static config.BackendConfiguration.ENABLE_PII_OBFUSCATION;
+
 public class ViewUtils {
     public static final String TEXT_VIEW_CLASS_NAME = "android.widget.TextView";
     public static final String IMAGE_BUTTON_CLASS_NAME = "android.widget.ImageButton";
@@ -31,6 +33,8 @@ public class ViewUtils {
     //On/off
     public static final String ON_TEXT = "on";
     public static final String OFF_TEXT = "off";
+    public static final String NUMBER_REPLACEMENT = "NUMBER";
+    public static final String EMAIL_REPLACEMENT = "EMAIL";
 
     //Texts
     public static final String SWITCH_TEXT = "SWITCH_ON_OFF";
@@ -145,7 +149,10 @@ public class ViewUtils {
             default:
                 break;
         }
-        return replacePII(textToReturn);
+        if (ENABLE_PII_OBFUSCATION) {
+            textToReturn = replacePII(textToReturn);
+        }
+        return textToReturn;
     }
 
     public static String replacePII(String inputText) {
@@ -155,12 +162,10 @@ public class ViewUtils {
     }
 
     public static String replaceNumbersWithPlaceHolders(String inputText) {
-        final String NUMBER_REPLACEMENT = "NUMBER";
         return inputText.replaceAll("\\d+\\.?\\d*", NUMBER_REPLACEMENT);
     }
 
     public static String replaceEmailsWithPlaceHolders(String inputText) {
-        final String EMAIL_REPLACEMENT = "EMAIL";
         List<String> replacedWords = new ArrayList<>();
         List<String> words = Utils.splitSentenceToWords(inputText);
         for (String inputWord: words) {

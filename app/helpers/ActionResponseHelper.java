@@ -67,7 +67,8 @@ public class ActionResponseHelper {
                 continue;
             }
             //TODO: semantic action element id may not be top level id -- so handle it
-            UIScreen.UIElementTuple uiElementTuple = dstScreen.findElementAndTopLevelParentById(semanticAction.getUiElementId());
+            UIScreen.UIElementTuple uiElementTuple = dstScreen.findElementAndTopLevelParentById(semanticAction.getUiElementId(), semanticAction.getUiElementParentId());
+            //UIScreen.UIElementTuple uiElementTuple = dstScreen.findElementAndTopLevelParentById(semanticAction.getUiElementId());
             if (uiElementTuple.getTopLevelParent() == null || uiElementTuple.getUiElement() == null) {
                 continue;
             }

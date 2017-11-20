@@ -8,4 +8,5 @@ public class BackendConfiguration {
     public static final double MIN_MATCH_PERCENTAGE_FOR_FUZZY_SCREEN_TITLE_MATCH = 0.8;
     public static final int INTERVAL_FOR_BACKING_UP_SCREEN_MAP_MINUTES = 30;
     public static final boolean GET_TOP_ELEMENT_IF_MULTIPLE_MATCHES = true;
+    public static final boolean ENABLE_PII_OBFUSCATION = true;
 }

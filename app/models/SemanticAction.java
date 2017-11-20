@@ -26,6 +26,7 @@ public class SemanticAction {
     private String semanticActionType;
     private String uiScreenId;
     private String uiElementId;
+    private String uiElementParentId;
     private String uiActionId;
     private MatchingInfo matchingInfo;
 
@@ -89,6 +90,7 @@ public class SemanticAction {
         this.screenSubTitle = uiScreen.getSubTitle();
         this.packageName = uiScreen.getPackageName();
         this.matchingInfo = uiScreen.getMatchingInfo();
+        this.uiElementParentId = parentElement != null ? parentElement.getId() : Utils.EMPTY_STRING;
     }
 
 
@@ -103,12 +105,13 @@ public class SemanticAction {
         packageName = Utils.EMPTY_STRING;
         matchingInfo = new MatchingInfo();
         screenSubTitle = Utils.EMPTY_STRING;
+        uiElementParentId = Utils.EMPTY_STRING;
     }
 
     public SemanticAction(String screenTitle, String screenSubTitle, String packageName,
                           String semanticActionDescription, String semanticActionType,
                           String uiScreenId, String uiElementId, String uiActionId,
-                          MatchingInfo matchingInfo) {
+                          MatchingInfo matchingInfo, String uiElementParentId) {
         this.screenTitle = screenTitle;
         this.screenSubTitle = screenSubTitle;
         this.packageName = packageName;
@@ -118,6 +121,7 @@ public class SemanticAction {
         this.uiElementId = uiElementId;
         this.uiActionId = uiActionId;
         this.matchingInfo = matchingInfo;
+        this.uiElementParentId = uiElementParentId;
     }
 
     /**
@@ -184,6 +188,14 @@ public class SemanticAction {
         this.screenSubTitle = screenSubTitle;
     }
 
+    public String getUiElementParentId() {
+        return uiElementParentId;
+    }
+
+    public void setUiElementParentId(String uiElementParentId) {
+        this.uiElementParentId = uiElementParentId;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -213,6 +225,7 @@ public class SemanticAction {
         result = 31 * result + uiElementId.hashCode();
         result = 31 * result + uiActionId.hashCode();
         result = 31 * result + matchingInfo.hashCode();
+        result = 31 * result + uiElementParentId.hashCode();
         return result;
     }
 
@@ -226,6 +239,7 @@ public class SemanticAction {
                 ", semanticActionType='" + semanticActionType + '\'' +
                 ", uiScreenId='" + uiScreenId + '\'' +
                 ", uiElementId='" + uiElementId + '\'' +
+                ", uiElementParentId='" + uiElementParentId + '\'' +
                 ", uiActionId='" + uiActionId + '\'' +
                 ", deviceInfo='" + matchingInfo + '\'' +
                 '}';
