@@ -102,6 +102,21 @@ public class Utils {
         return replacedSentenceBuilder.toString().trim().toLowerCase();
     }
 
+    public static String removeSuccessiveDuplicateWords(String input) {
+        if (Utils.nullOrEmpty(input)) {
+            return Utils.EMPTY_STRING;
+        }
+        List<String> words = splitSentenceToWords(input);
+        List<String> outputWords = new ArrayList<>();
+        String lastWord = Utils.EMPTY_STRING;
+        for (String word: words) {
+            if (!word.equalsIgnoreCase(lastWord)) {
+                outputWords.add(word);
+            }
+            lastWord = word;
+        }
+        return combineWordsToSentence(outputWords);
+    }
 
     public static List<String> generateKeywordsForFindingElement(String inputText) {
         if (nullOrEmpty(inputText)) {

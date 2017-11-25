@@ -284,7 +284,11 @@ public class SemanticAction {
             default:
                 break;
         }
-        return stringList;
+        List<String> descriptionListToReturn = new ArrayList<>();
+        for (String description: stringList) {
+            descriptionListToReturn.add(Utils.removeSuccessiveDuplicateWords(description));
+        }
+        return descriptionListToReturn;
     }
 
 
