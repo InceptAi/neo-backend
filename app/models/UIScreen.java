@@ -3,6 +3,7 @@ package models;
 import nlu.SimpleTextInterpreter;
 import util.MergeUtils;
 import util.Utils;
+import util.ViewUtils;
 
 
 import java.util.*;
@@ -244,16 +245,6 @@ public class UIScreen {
         return shortenedList;
     }
 
-    public List<UIElement> findElementsInScreen(String className, String packageName,
-                                                String text, boolean needClickable,
-                                                boolean fuzzySearch) {
-        if (fuzzySearch) {
-            return findElementsInScreenFuzzyNested(className, packageName, text, needClickable);
-        } else {
-            return findElementsInScreenStrictNested(className, packageName, text, needClickable);
-        }
-    }
-
 
     private List<UIElement> findElementsInScreenFuzzyNested(String className, String packageName, String text, boolean needClickable) {
         HashMap<String, UIElement> uiElementListToReturn = new HashMap<>();
@@ -285,11 +276,20 @@ public class UIScreen {
 
     private List<UIElement> findElementsInScreenStrictNested(String className, String packageName,
                                                              String text, boolean needClickable) {
+        final String MORE_SAMSUNG_BUG = "more";
         Utils.printDebug("In Strict nested matching, input text " + text + " class: " + className + " pkg: " + packageName);
         HashMap<String, UIElement> uiElementMap = new HashMap<>();
         for (UIElement uiElement: uiElements.values()) {
             Utils.printDebug("In Strict nested matching, looking at top level element: " + uiElement.toString());
             uiElementMap.putAll(uiElement.findElementsByTextStrict(className, packageName, text, needClickable));
+        }
+        if (uiElementMap.isEmpty() && text.equalsIgnoreCase(MORE_SAMSUNG_BUG) && className.equalsIgnoreCase(ViewUtils.TEXT_VIEW_CLASS_NAME)) {
+            //This is the samsung bug where the more button shows up as textview in last view clicked but shows up as button in viewMap
+            className = ViewUtils.BUTTON_CLASS_NAME;
+            for (UIElement uiElement: uiElements.values()) {
+                Utils.printDebug("In Strict nested matching, looking at top level element: " + uiElement.toString());
+                uiElementMap.putAll(uiElement.findElementsByTextStrict(className, packageName, text, needClickable));
+            }
         }
         return new ArrayList<>(uiElementMap.values());
     }

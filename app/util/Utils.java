@@ -77,7 +77,7 @@ public class Utils {
     }
 
     public static String replaceWord(String inputSentence, HashMap<String, String> replacementMap) {
-        Utils.printDebug("In replaceWord, replacing: " + inputSentence);
+        //Utils.printDebug("In replaceWord, replacing: " + inputSentence);
         if (inputSentence == null) {
             return null;
         }
@@ -98,7 +98,7 @@ public class Utils {
                 replacedSentenceBuilder.append(" ");
             }
         }
-        Utils.printDebug("In replaceWord, output: " + replacedSentenceBuilder.toString().trim().toLowerCase());
+        //Utils.printDebug("In replaceWord, output: " + replacedSentenceBuilder.toString().trim().toLowerCase());
         return replacedSentenceBuilder.toString().trim().toLowerCase();
     }
 

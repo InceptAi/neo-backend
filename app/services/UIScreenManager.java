@@ -221,6 +221,9 @@ public class UIScreenManager {
         double bestMetric = 0;
         for (String screenId: screenIdSet) {
             UIScreen uiScreen = uiScreenMap.get(screenId);
+            if (uiScreen == null) {
+                continue;
+            }
             double totalMetric = textInterpreter.getMatchMetric(keyWords, uiScreen.getTitle(), MIN_MATCH_PERCENTAGE_FOR_FUZZY_SCREEN_TITLE_MATCH);
             double matchingScore = Utils.getMatchingScore(
                     uiScreen.getMatchingInfo(),
