@@ -1,13 +1,13 @@
 [<img src="https://img.shields.io/travis/playframework/play-java-starter-example.svg"/>](https://travis-ci.org/playframework/play-java-starter-example)
+[![Maintainability](https://api.codeclimate.com/v1/badges/70649b79bf4a747a69e6/maintainability)](https://codeclimate.com/github/InceptAi/neo-backend/maintainability)
 
-# play-java-starter-example
+# Java backend for Neo assistant
 
-This is a starter application that shows how Play works.  Please see the documentation at https://www.playframework.com/documentation/latest/Home for more details.
+This is the java backend for Neo AI assistant, a mobile application for real-time AI-driven tech support. The app is supported by a backend that uses an inference algorithm with a crowdsourced knowledge base to compute solutions. The knowledge about a technical issue gets shared across users using our expert system which can perform root cause analysis and match it up with a possible fix in the knowledge base. Providing solution customized for user’s device and navigating complex settings to apply such a solution are two key components of our approach. 
 
 ## Running
 
-Run this using [sbt](http://www.scala-sbt.org/).  If you downloaded this project from http://www.playframework.com/download then you'll find a prepackaged appVersion of sbt in the project directory:
-
+Run this using [sbt](http://www.scala-sbt.org/). 
 ```
 sbt run
 ```
@@ -16,38 +16,23 @@ And then go to http://localhost:9000 to see the running web application.
 
 ## Controllers
 
-There are several demonstration files available in this template.
+There are two key Controllers.
 
-- HomeController.java:
+- CrawlController.java:
 
-  Shows how to handle simple HTTP requests.
+  Processes the UI screen data from the client device and stores it in its knowledge graph.
 
-- AsyncController.java:
+- ActionController.java:
 
-  Shows how to do asynchronous programming when handling a request.
+  Processes client requests for help and returns the top matching actions that can resolve an issue.
 
-- CountController.java:
-
-  Shows how to inject a component into a controller and use the component when
-  handling requests.
 
 ## Components
 
-- Module.java:
+- Model:
 
-  Shows how to use Guice to bind all the components needed by your application.
+  Data model for the backend -- UI Screen, UI Elements, UI Paths, UI Graph
 
-- Counter.java:
+- View:
 
-  An example of a component that contains state, in this case a simple counter.
-
-- ApplicationTimer.java:
-
-  An example of a component that starts when the application starts and stops
-  when the application stops.
-
-## Filters
-
-- ExampleFilter.java
-
-  A simple filter that adds a header to every response.
+  Structures sent down to the client. Includes sending down navigation paths for taking automated actions.
