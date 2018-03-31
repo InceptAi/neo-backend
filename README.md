@@ -3,7 +3,7 @@
 
 # Java backend for Neo assistant
 
-This is the java backend for Neo AI assistant, a mobile application for real-time AI-driven tech support. The app is supported by a backend that uses an inference algorithm with a crowdsourced knowledge base to compute solutions. The knowledge about a technical issue gets shared across users using our expert system which can perform root cause analysis and match it up with a possible fix in the knowledge base. Providing solution customized for user’s device and navigating complex settings to apply such a solution are two key components of our approach. 
+This is the java backend for Neo AI assistant, a mobile application for real-time AI-driven tech support. The app is supported by a backend that uses an inference algorithm with a crowdsourced knowledge base to compute solutions. The knowledge about a technical issue gets shared across users using our expert system which can perform root cause analysis and match it up with a possible fix in the knowledge base. Providing solution customized for user’s device and navigating complex settings to apply such a solution are two key components of our approach. Watch our demo here: https://www.youtube.com/watch?v=ChmHLGvxVnc
 
 ## Running
 
